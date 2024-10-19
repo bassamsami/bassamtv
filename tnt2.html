@@ -10,10 +10,20 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
+        background-color: black; /* لتجنب الحواف البيضاء */
     }
     #player {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
+    }
+    video {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* يغطي كامل الشاشة */
     }
 </style>
 <script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
@@ -60,9 +70,14 @@ var getIMG = getParameterByName('img');
         sharing: false
     });
 
-    // Request full screen on player setup for all devices
+    // Ensure full screen without black bars
     playerInstance.on('ready', function() {
         var element = document.getElementById("player").querySelector("video");
+        if (element) {
+            element.style.width = '100%';
+            element.style.height = '100%';
+            element.style.objectFit = 'cover'; // يغطي الشاشة ويزيل الحواف السوداء
+        }
         if (element.requestFullscreen) {
             element.requestFullscreen();
         } else if (element.mozRequestFullScreen) { // Firefox
