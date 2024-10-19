@@ -10,7 +10,7 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background-color: black; /* لتجنب الحواف البيضاء */
+        background-color: black; /* لضمان ظهور خلفية سوداء بدلاً من الأبيض */
     }
     #player {
         position: absolute;
@@ -21,9 +21,15 @@
     }
     video {
         position: absolute;
-        width: 100%;
-        height: 100%;
-        object-fit: cover; /* يغطي كامل الشاشة */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        min-width: 100%;
+        min-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: cover; /* تغطية الشاشة بالكامل */
+        background-color: black;
     }
 </style>
 <script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
@@ -70,22 +76,15 @@ var getIMG = getParameterByName('img');
         sharing: false
     });
 
-    // Ensure full screen without black bars
+    // تأكيد أن الفيديو يغطي كامل الشاشة بدون حواف
     playerInstance.on('ready', function() {
         var element = document.getElementById("player").querySelector("video");
         if (element) {
-            element.style.width = '100%';
-            element.style.height = '100%';
-            element.style.objectFit = 'cover'; // يغطي الشاشة ويزيل الحواف السوداء
-        }
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        } else if (element.mozRequestFullScreen) { // Firefox
-            element.mozRequestFullScreen();
-        } else if (element.webkitRequestFullscreen) { // Chrome, Safari, Opera
-            element.webkitRequestFullscreen();
-        } else if (element.msRequestFullscreen) { // IE/Edge
-            element.msRequestFullscreen();
+            element.style.width = 'auto';
+            element.style.height = 'auto';
+            element.style.minWidth = '100%';
+            element.style.minHeight = '100%';
+            element.style.objectFit = 'cover'; // للتأكد من أن الفيديو يغطي كامل الشاشة
         }
     });
 </script>
