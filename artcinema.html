@@ -1,46 +1,58 @@
-<html lang="ar_EG">
+ <html lang="ar">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style> 
-#player {
-  margin-top: 30px;  
-  border-radius: 20px;
-  padding: 10px;
-  box-shadow: 0px 4px 6px 4px blue;
-    }
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<style type="text/css">
+body {
+margin: 0;
+padding: 0;
+}
 </style>
-<meta name="referrer" content="no-referrer">
-<script src="https://content.jwplatform.com/libraries/KB5zFt7A.js"></script>
-<script> jwplayer.key='XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';</script>
+<script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
+<script>
+jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
+</script>
 </head>
 <body>
+<script type="text/javascript">
+function getParameterByName(name) {
+name = name.replace(/[\[]/, "\[").replace(/[\]]/, "\]");
+var regex = new RegExp("[\?&]" + name + "=([^&#]*)"),
+results = regex.exec(location.search);
+return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var get = getParameterByName('get');
+var key = getParameterByName('key');
+var key2 = getParameterByName('key2');
+var getIMG = getParameterByName('img');
+</script>
 <div id="player"></div>
-<script>
+<script type="text/javascript">
 var playerInstance = jwplayer("player");
+
 playerInstance.setup({
- playlist: [{
-  "sources": [
-   {
+playlist: [{
+"sources": [
+{
     "default": false,
     "type": "dash",
     "file": "https://neacdnpop3-edge01.aws.playco.com/live/eds/ART_Cinema/DASH/ART_Cinema.mpd",
 "drm": {
      "clearkey": { "keyId": "bd484fc91dcf152010a0e367e15ab60e", "key": "d9bed0a77b7da410129820bcc6606670" }
-    },
-    "label": "1"
-   }
-  ]
- }],
- width: "100%",
- height: "100%",
- aspectratio: "16:9",
- autostart: true,
- cast: {},
- sharing: false
+},
+"label": "0"
+}
+]
+}],
+width: "100%",
+height: "100%",
+autostart: true,
+cast: {},
+sharing: false
 });
+
 </script>
 </body>
 </html>
-<br>
 <img alt="وصف_الصورة" src="https://img.kooora.com/?i=o%2Fh%2F2%2F16%2Fad-sports-premium-1.png" style="height: 100%; max-width: 100%;" />
