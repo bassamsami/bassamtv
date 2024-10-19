@@ -2,11 +2,19 @@
 <head>
 <meta name="robots" content="noindex, nofollow" />
 <meta name="referrer" content="no-referrer" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style type="text/css">
-body {
-margin: 0;
-padding: 0;
-}
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    #player {
+        width: 100%;
+        height: 100%;
+    }
 </style>
 <script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
 <script>
@@ -16,10 +24,10 @@ jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
 <body>
 <script type="text/javascript">
 function getParameterByName(name) {
-name = name.replace(/[\[]/, "\[").replace(/[\]]/, "\]");
-var regex = new RegExp("[\?&]" + name + "=([^&#]*)"),
-results = regex.exec(location.search);
-return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 var get = getParameterByName('get');
@@ -29,29 +37,42 @@ var getIMG = getParameterByName('img');
 </script>
 <div id="player"></div>
 <script type="text/javascript">
-var playerInstance = jwplayer("player");
+    var playerInstance = jwplayer("player");
 
-playerInstance.setup({
-playlist: [{
-"sources": [
-{
-    "default": false,
-    "type": "dash",
-    "file": "https://live.ll.ww.aiv-cdn.net/OTTB/lhr-nitro/live/clients/dash/enc/f0qvkrra8j/out/v1/f8fa17f087564f51aa4d5c700be43ec4/cenc.mpd",
-"drm": {
-     "clearkey": { "keyId": "6d1708b185c6c4d7b37600520c7cc93c", "key": "1aace05f58d8edef9697fd52cb09f441" }
-},
-"label": "0"
-}
-]
-}],
-width: "100%",
-height: "100%",
-autostart: true,
-cast: {},
-sharing: false
-});
+    playerInstance.setup({
+        playlist: [{
+            "sources": [
+            {
+                "default": false,
+                "type": "dash",
+                "file": "https://live.ll.ww.aiv-cdn.net/OTTB/lhr-nitro/live/clients/dash/enc/f0qvkrra8j/out/v1/f8fa17f087564f51aa4d5c700be43ec4/cenc.mpd",
+                "drm": {
+                    "clearkey": { "keyId": "6d1708b185c6c4d7b37600520c7cc93c", "key": "1aace05f58d8edef9697fd52cb09f441" }
+                },
+                "label": "0"
+            }
+            ]
+        }],
+        width: "100%",
+        height: "100%",
+        autostart: true,
+        cast: {},
+        sharing: false
+    });
 
+    // Request full screen on player setup for all devices
+    playerInstance.on('ready', function() {
+        var element = document.getElementById("player").querySelector("video");
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) { // Firefox
+            element.mozRequestFullScreen();
+        } else if (element.webkitRequestFullscreen) { // Chrome, Safari, Opera
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) { // IE/Edge
+            element.msRequestFullscreen();
+        }
+    });
 </script>
 </body>
 </html>
