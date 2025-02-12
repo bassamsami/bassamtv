@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", function() {
     let userTimeOffset = 0;
     let previousPage = "channels"; // لتتبع الصفحة السابقة (القنوات أو المباريات)
 
+    // الكشف عن الجهاز (هاتف أو كمبيوتر)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     // تبديل الثيم
     themeToggle.addEventListener("click", () => {
         document.body.classList.toggle("dark-theme");
@@ -90,7 +93,20 @@ document.addEventListener("DOMContentLoaded", function() {
             sharing: false
         };
 
-        jwplayer("player").setup(config);
+        const playerInstance = jwplayer("player").setup(config);
+
+        // إذا كان الجهاز هاتف، قم بإضافة دعم للوضع الأفقي (Landscape) عند الضغط على زر تكبير الشاشة
+        if (isMobile) {
+            playerInstance.on('fullscreen', function(event) {
+                if (event.fullscreen) {
+                    screen.orientation.lock('landscape').catch(() => {
+                        console.log("لم يتمكن المتصفح من قفل الشاشة في الوضع الأفقي.");
+                    });
+                } else {
+                    screen.orientation.unlock();
+                }
+            });
+        }
     }
 
     // تحديد نوع الملف تلقائيًا
