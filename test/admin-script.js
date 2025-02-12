@@ -247,7 +247,8 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
     // التأكد من أن جميع الحقول المطلوبة مملوءة
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
         const matchTimeUTC = new Date(matchTime).toISOString(); // تحويل الوقت إلى تنسيق UTC
-
+       console.log("رابط صورة الفريق الأول:", team1Image); // للتأكد من أن القيمة صحيحة
+        console.log("رابط صورة الفريق الثاني:", team2Image); // للتأكد من أن القيمة صحيحة
        console.log("رابط القناة المرسل:", channelUrl); // للتأكد من أن القيمة صحيحة
 
 db.collection("matches").add({
