@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // تعريف المتغيرات
     const themeToggle = document.getElementById("theme-toggle");
     const channelsList = document.getElementById("channels-list");
     const searchInput = document.getElementById("search-input");
@@ -9,8 +8,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const closeDialog = document.getElementById("close-dialog");
     const toggleSidebar = document.getElementById("toggle-sidebar");
     const sidebar = document.getElementById("sidebar");
+    const playerContainer = document.getElementById("player-container");
+    const backToChannels = document.getElementById("back-to-channels");
 
-    let userTimeOffset = 0; // فارق التوقيت بين التوقيت المحلي والتوقيت العالمي
+    let userTimeOffset = 0;
 
     // تبديل الثيم
     themeToggle.addEventListener("click", () => {
@@ -31,8 +32,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 const group = groupDoc.data();
                 const groupSection = document.createElement("div");
                 groupSection.classList.add("group-section");
-                groupSection.innerHTML = `<h3 class="group-name">${group.name}</h3>`;
+                groupSection.innerHTML = `
+                    <h3 class="group-name">${group.name}</h3>
+                    <button class="scroll-button scroll-left"><i class="fas fa-chevron-left"></i></button>
+                    <div class="channels-container"></div>
+                    <button class="scroll-button scroll-right"><i class="fas fa-chevron-right"></i></button>
+                `;
                 channelsList.appendChild(groupSection);
+
+                const channelsContainer = groupSection.querySelector(".channels-container");
 
                 db.collection("channels").where("group", "==", groupDoc.id).orderBy("createdAt", "asc").get().then((channelsSnapshot) => {
                     channelsSnapshot.forEach((channelDoc) => {
@@ -44,13 +52,15 @@ document.addEventListener("DOMContentLoaded", function() {
                             <p>${channel.name}</p>
                         `;
                         channelCard.setAttribute("data-url", channel.url);
-                        channelCard.setAttribute("data-key", channel.key || ""); // Key ID:Key
-                        groupSection.appendChild(channelCard);
+                        channelCard.setAttribute("data-key", channel.key || "");
+                        channelsContainer.appendChild(channelCard);
 
                         channelCard.addEventListener("click", () => {
                             const url = channelCard.getAttribute("data-url");
                             const key = channelCard.getAttribute("data-key");
                             playChannel(url, key);
+                            playerContainer.style.display = "block";
+                            sidebar.style.display = "none";
                         });
                     });
                 });
@@ -60,9 +70,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // تشغيل القناة
     function playChannel(url, key) {
-        console.log("تشغيل القناة:", url); // فحص الرابط
-        console.log("المفتاح:", key); // فحص المفتاح
-
         if (!url) {
             console.error("رابط القناة غير موجود!");
             return;
@@ -72,12 +79,12 @@ document.addEventListener("DOMContentLoaded", function() {
             playlist: [{
                 sources: [{
                     file: url,
-                    type: getStreamType(url), // تحديد نوع الملف تلقائيًا
+                    type: getStreamType(url),
                     drm: key ? {
                         clearkey: {
-                            keyId: key.split(":")[0], // keyId
-                            key: key.split(":")[1],   // key
-                            robustnessLevel: "SW_SECURE_CRYPTO" // تحديد مستوى أمان أعلى
+                            keyId: key.split(":")[0],
+                            key: key.split(":")[1],
+                            robustnessLevel: "SW_SECURE_CRYPTO"
                         }
                     } : null
                 }]
@@ -85,11 +92,10 @@ document.addEventListener("DOMContentLoaded", function() {
             width: "100%",
             height: "100%",
             autostart: true,
-            cast: {}, // إزالة ميزة Chromecast
+            cast: {},
             sharing: false
         };
 
-        // إعادة تهيئة المشغل
         jwplayer("player").setup(config);
     }
 
@@ -102,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (url.includes(".mp4") || url.includes(".m4v")) {
             return "mp4";
         } else {
-            return "auto"; // JW Player سيحاول تحديد النوع تلقائيًا
+            return "auto";
         }
     }
 
@@ -160,13 +166,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 const team1Image = match.team1Image;
                 const team2Image = match.team2Image;
-                const matchTimeUTC = new Date(match.matchTime); // وقت بداية المباراة بتنسيق UTC
-                const currentTimeUTC = new Date(); // الوقت الحالي بتنسيق UTC
+                const matchTimeUTC = new Date(match.matchTime);
+                const currentTimeUTC = new Date();
 
-                // حساب الفرق بين الوقت الحالي ووقت بداية المباراة
-                const timeDiff = (currentTimeUTC - matchTimeUTC) / (1000 * 60); // الفرق بالدقائق
+                const timeDiff = (currentTimeUTC - matchTimeUTC) / (1000 * 60);
 
-                // تحديد حالة المباراة
                 let matchStatus = "";
                 let matchStatusClass = "";
                 if (timeDiff < -15) {
@@ -175,13 +179,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else if (timeDiff >= -15 && timeDiff < 0) {
                     matchStatus = "تبدأ قريبًا";
                     matchStatusClass = "match-status soon";
-                } else if (timeDiff >= 0 && timeDiff < 120) { // المباراة تستمر لمدة ساعتين
+                } else if (timeDiff >= 0 && timeDiff < 120) {
                     matchStatus = "جارية الآن";
                     matchStatusClass = "match-status live";
                 } else {
-                    // إذا مرت ساعتان على المباراة، يتم حذفها تلقائيًا
                     db.collection("matches").doc(doc.id).delete();
-                    return; // لا نعرض المباراة إذا تم حذفها
+                    return;
                 }
 
                 matchItem.innerHTML = `
@@ -211,17 +214,24 @@ document.addEventListener("DOMContentLoaded", function() {
                 matchesTable.appendChild(matchItem);
             });
 
-            // إضافة حدث لزر مشاهدة المباراة
             document.querySelectorAll(".watch-button").forEach(button => {
                 button.addEventListener("click", () => {
                     const url = button.getAttribute("data-url");
                     const key = button.getAttribute("data-key");
                     playChannel(url, key);
-                    matchesDialog.close(); // إغلاق الديالوج بعد الضغط على الزر
+                    matchesDialog.close();
+                    playerContainer.style.display = "block";
+                    sidebar.style.display = "none";
                 });
             });
         });
     }
+
+    // زر الرجوع إلى القنوات
+    backToChannels.addEventListener("click", () => {
+        playerContainer.style.display = "none";
+        sidebar.style.display = "block";
+    });
 
     // تحميل القنوات عند بدء التشغيل
     loadChannels();
