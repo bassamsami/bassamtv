@@ -58,7 +58,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             playerPage.style.display = "block";
                             channelsPage.style.display = "none";
                             previousPage = "channels"; // تحديث الصفحة السابقة
-                            history.pushState({ page: "player" }, null, null); // إضافة حالة جديدة لتاريخ المتصفح
                         });
                     });
                 });
@@ -159,7 +158,6 @@ document.addEventListener("DOMContentLoaded", function() {
         channelsPage.style.display = "none";
         loadMatches();
         previousPage = "matches"; // تحديث الصفحة السابقة
-        history.pushState({ page: "matches" }, null, null); // إضافة حالة جديدة لتاريخ المتصفح
     });
 
     // تحميل المباريات
@@ -231,7 +229,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     matchesPage.style.display = "none";
                     playerPage.style.display = "block";
                     previousPage = "matches"; // تحديث الصفحة السابقة
-                    history.pushState({ page: "player" }, null, null); // إضافة حالة جديدة لتاريخ المتصفح
                 });
             });
         });
@@ -247,28 +244,23 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (previousPage === "matches") {
             matchesPage.style.display = "block";
         }
-        history.back(); // العودة إلى الصفحة السابقة في تاريخ المتصفح
+        history.pushState({ page: previousPage }, null, null); // إضافة حالة جديدة لتاريخ المتصفح
     });
 
     // زر الرجوع من جدول المباريات
     backToChannelsFromMatches.addEventListener("click", () => {
         matchesPage.style.display = "none";
         channelsPage.style.display = "block";
-        history.back(); // العودة إلى الصفحة السابقة في تاريخ المتصفح
     });
 
     // التعامل مع زر الرجوع الخاص بالهاتف
     window.addEventListener("popstate", function(event) {
-        if (event.state && event.state.page === "player") {
-            playerPage.style.display = "none";
-            if (previousPage === "channels") {
-                channelsPage.style.display = "block";
-            } else if (previousPage === "matches") {
-                matchesPage.style.display = "block";
-            }
-        } else if (event.state && event.state.page === "matches") {
-            matchesPage.style.display = "none";
+        if (event.state && event.state.page === "channels") {
             channelsPage.style.display = "block";
+            playerPage.style.display = "none";
+        } else if (event.state && event.state.page === "matches") {
+            matchesPage.style.display = "block";
+            playerPage.style.display = "none";
         }
     });
 
