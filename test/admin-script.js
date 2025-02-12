@@ -160,7 +160,7 @@ document.getElementById("add-channel-btn").addEventListener("click", () => {
     const channelName = document.getElementById("channel-name").value;
     const channelUrl = document.getElementById("channel-url").value;
     const channelImage = document.getElementById("channel-image").value;
-    const channelKey = document.getElementById("channel-key").value; // مفتاح الحماية (اختياري)
+    const channelKey = document.getElementById("channel-key").value; // Key ID:Key
     const channelGroup = document.getElementById("channel-group").value;
 
     if (channelName && channelUrl && channelImage && channelGroup) {
@@ -168,7 +168,7 @@ document.getElementById("add-channel-btn").addEventListener("click", () => {
             name: channelName,
             url: channelUrl,
             image: channelImage,
-            key: channelKey || "", // إضافة مفتاح الحماية (اختياري)
+            key: channelKey || "", // Key ID:Key (اختياري)
             group: channelGroup,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
@@ -188,6 +188,7 @@ function editChannel(channelId) {
         document.getElementById("channel-name").value = channel.name;
         document.getElementById("channel-url").value = channel.url;
         document.getElementById("channel-image").value = channel.image;
+        document.getElementById("channel-key").value = channel.key || ""; // Key ID:Key
         document.getElementById("channel-group").value = channel.group;
 
         document.getElementById("add-channel-btn").style.display = "none";
@@ -201,7 +202,7 @@ document.getElementById("edit-channel-btn").addEventListener("click", () => {
     const name = document.getElementById("channel-name").value;
     const url = document.getElementById("channel-url").value;
     const image = document.getElementById("channel-image").value;
-    const key = document.getElementById("channel-key").value; // مفتاح الحماية (اختياري)
+    const key = document.getElementById("channel-key").value; // Key ID:Key
     const group = document.getElementById("channel-group").value;
 
     if (name && url && image && group) {
@@ -209,7 +210,7 @@ document.getElementById("edit-channel-btn").addEventListener("click", () => {
             name: name,
             url: url,
             image: image,
-            key: key || "", // إضافة مفتاح الحماية (اختياري)
+            key: key || "", // Key ID:Key (اختياري)
             group: group
         }).then(() => {
             alert("تم تعديل القناة بنجاح");
@@ -241,7 +242,7 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
     const matchLeague = document.getElementById("match-league").value;
     const commentator = document.getElementById("commentator").value;
     const channelUrl = document.getElementById("channel-url").value; // رابط القناة (اختياري)
-    const channelKey = document.getElementById("channel-key").value; // مفتاح الحماية (اختياري)
+    const channelKey = document.getElementById("channel-key").value; // Key ID:Key (اختياري)
 
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator) {
         const matchTimeUTC = new Date(matchTime).toISOString();
@@ -254,8 +255,8 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelUrl: channelUrl || "", // إضافة رابط القناة (اختياري)
-            key: channelKey || "", // إضافة مفتاح الحماية (اختياري)
+            channelUrl: channelUrl || "", // رابط القناة (اختياري)
+            key: channelKey || "", // Key ID:Key (اختياري)
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert("تمت إضافة المباراة بنجاح");
@@ -284,7 +285,7 @@ function loadMatches() {
                         <p>الوقت: ${new Date(match.matchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         <p>الدوري: ${match.matchLeague}</p>
                         <p>المعلق: ${match.commentator}</p>
-                        <p>القناة: ${match.channelId}</p>
+                        <p>القناة: ${match.channelUrl}</p>
                         <button onclick="editMatch('${doc.id}')">تعديل</button>
                         <button onclick="deleteMatch('${doc.id}')">حذف</button>
                     `;
@@ -305,7 +306,8 @@ function editMatch(matchId) {
         document.getElementById("edit-match-time").value = new Date(match.matchTime).toISOString().slice(0, 16);
         document.getElementById("edit-match-league").value = match.matchLeague;
         document.getElementById("edit-commentator").value = match.commentator;
-        document.getElementById("edit-match-channel").value = match.channelId;
+        document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (اختياري)
+        document.getElementById("edit-channel-key").value = match.key || ""; // Key ID:Key (اختياري)
 
         showPage("edit-match");
     });
@@ -319,9 +321,10 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
     const matchTime = document.getElementById("edit-match-time").value;
     const matchLeague = document.getElementById("edit-match-league").value;
     const commentator = document.getElementById("edit-commentator").value;
-    const matchChannel = document.getElementById("edit-match-channel").value;
+    const channelUrl = document.getElementById("edit-channel-url").value; // رابط القناة (اختياري)
+    const channelKey = document.getElementById("edit-channel-key").value; // Key ID:Key (اختياري)
 
-    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && matchChannel) {
+    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator) {
         const matchTimeUTC = new Date(matchTime).toISOString();
 
         db.collection("matches").doc(currentMatchId).update({
@@ -332,7 +335,8 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelId: matchChannel
+            channelUrl: channelUrl || "", // رابط القناة (اختياري)
+            key: channelKey || "", // Key ID:Key (اختياري)
         }).then(() => {
             alert("تم تعديل المباراة بنجاح");
             loadMatches();
