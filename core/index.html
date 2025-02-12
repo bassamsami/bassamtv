@@ -6,10 +6,8 @@
     <title>MoviBall - Bassam Samir</title>
     <link rel="stylesheet" href="user-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- تحميل JW Player -->
     <script src="https://ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
     <script>
-        // تعريف مفتاح JW Player
         jwplayer.key = 'ITWMv7t88JGzI0xPwW8I0+LveiXX9SWbfdmt0ArUSyc=';
     </script>
 </head>
@@ -43,8 +41,9 @@
         </aside>
 
         <!-- المشغل -->
-        <div class="player-container">
+        <div class="player-container" id="player-container">
             <div id="player"></div>
+            <button id="back-to-channels" class="back-button"><i class="fas fa-arrow-left"></i> رجوع</button>
         </div>
 
         <!-- زر عرض جدول المباريات -->
@@ -58,7 +57,7 @@
             <div id="matches-table">
                 <!-- المباريات سيتم إضافتها هنا عبر JavaScript -->
             </div>
-            <button id="close-dialog">إغلاق</button>
+            <button id="close-dialog" class="back-button"><i class="fas fa-arrow-left"></i> رجوع</button>
         </dialog>
     </main>
 
