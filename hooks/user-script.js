@@ -23,51 +23,67 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // تحميل القنوات
-    function loadChannels() {
-        channelsList.innerHTML = "";
-        db.collection("groups").orderBy("createdAt", "asc").get().then((groupsSnapshot) => {
-            groupsSnapshot.forEach((groupDoc) => {
-                const group = groupDoc.data();
-                const groupSection = document.createElement("div");
-                groupSection.classList.add("group-section");
-                groupSection.innerHTML = `
-                    <h3 class="group-name">${group.name}</h3>
-                    <div class="channels-container"></div>
-                    <div class="navigation-buttons">
-                        <button class="nav-button left" onclick="scrollChannels('${groupDoc.id}', -150)"><i class="fas fa-chevron-left"></i></button>
-                        <button class="nav-button right" onclick="scrollChannels('${groupDoc.id}', 150)"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                `;
-                channelsList.appendChild(groupSection);
+    // وظيفة التمرير بين القنوات
+function scrollChannels(groupId, amount) {
+    const groupSection = document.querySelector(`[data-group-id="${groupId}"]`);
+    if (groupSection) {
+        const channelsContainer = groupSection.querySelector(".channels-container");
+        if (channelsContainer) {
+            channelsContainer.scrollBy({
+                left: amount,
+                behavior: 'smooth'
+            });
+        }
+    }
+}
 
-                const channelsContainer = groupSection.querySelector(".channels-container");
+// تحميل القنوات
+function loadChannels() {
+    channelsList.innerHTML = "";
+    db.collection("groups").orderBy("createdAt", "asc").get().then((groupsSnapshot) => {
+        groupsSnapshot.forEach((groupDoc) => {
+            const group = groupDoc.data();
+            const groupSection = document.createElement("div");
+            groupSection.classList.add("group-section");
+            groupSection.setAttribute("data-group-id", groupDoc.id); // إضافة معرف المجموعة
+            groupSection.innerHTML = `
+                <h3 class="group-name">${group.name}</h3>
+                <div class="channels-container"></div>
+                <div class="navigation-buttons">
+                    <button class="nav-button left" onclick="scrollChannels('${groupDoc.id}', -150)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="nav-button right" onclick="scrollChannels('${groupDoc.id}', 150)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            `;
+            channelsList.appendChild(groupSection);
 
-                db.collection("channels").where("group", "==", groupDoc.id).orderBy("createdAt", "asc").get().then((channelsSnapshot) => {
-                    channelsSnapshot.forEach((channelDoc) => {
-                        const channel = channelDoc.data();
-                        const channelCard = document.createElement("div");
-                        channelCard.classList.add("channel-card");
-                        channelCard.innerHTML = `
-                            <img src="${channel.image}" alt="${channel.name}" onerror="this.src='default-image.png'">
-                            <p>${channel.name}</p>
-                        `;
-                        channelCard.setAttribute("data-url", channel.url);
-                        channelCard.setAttribute("data-key", channel.key || "");
-                        channelsContainer.appendChild(channelCard);
+            const channelsContainer = groupSection.querySelector(".channels-container");
 
-                        channelCard.addEventListener("click", () => {
-                            const url = channelCard.getAttribute("data-url");
-                            const key = channelCard.getAttribute("data-key");
-                            playChannel(url, key);
-                            playerPage.style.display = "block";
-                            channelsPage.style.display = "none";
-                            previousPage = "channels"; // تحديث الصفحة السابقة
-                        });
+            db.collection("channels").where("group", "==", groupDoc.id).orderBy("createdAt", "asc").get().then((channelsSnapshot) => {
+                channelsSnapshot.forEach((channelDoc) => {
+                    const channel = channelDoc.data();
+                    const channelCard = document.createElement("div");
+                    channelCard.classList.add("channel-card");
+                    channelCard.innerHTML = `
+                        <img src="${channel.image}" alt="${channel.name}" onerror="this.src='default-image.png'">
+                        <p>${channel.name}</p>
+                    `;
+                    channelCard.setAttribute("data-url", channel.url);
+                    channelCard.setAttribute("data-key", channel.key || "");
+                    channelsContainer.appendChild(channelCard);
+
+                    channelCard.addEventListener("click", () => {
+                        const url = channelCard.getAttribute("data-url");
+                        const key = channelCard.getAttribute("data-key");
+                        playChannel(url, key);
+                        playerPage.style.display = "block";
+                        channelsPage.style.display = "none";
+                        previousPage = "channels"; // تحديث الصفحة السابقة
                     });
                 });
             });
         });
-    }
+    });
+}
 
     // وظيفة التمرير بين القنوات
     window.scrollChannels = function(groupId, amount) {
