@@ -149,79 +149,79 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // تحميل المباريات
     function loadMatches() {
-        const matchesTable = document.getElementById("matches-table");
-        matchesTable.innerHTML = "";
+    const matchesTable = document.getElementById("matches-table");
+    matchesTable.innerHTML = "";
 
-        db.collection("matches").orderBy("createdAt", "asc").get().then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-                const match = doc.data();
-                const matchItem = document.createElement("div");
-                matchItem.classList.add("match-item");
+    db.collection("matches").orderBy("createdAt", "asc").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            const match = doc.data();
+            const matchItem = document.createElement("div");
+            matchItem.classList.add("match-item");
 
-                const team1Image = match.team1Image;
-                const team2Image = match.team2Image;
-                const matchTimeUTC = new Date(match.matchTime); // وقت بداية المباراة بتنسيق UTC
-                const currentTimeUTC = new Date(); // الوقت الحالي بتنسيق UTC
+            const team1Image = match.team1Image;
+            const team2Image = match.team2Image;
+            const matchTimeUTC = new Date(match.matchTime); // وقت بداية المباراة بتنسيق UTC
+            const currentTimeUTC = new Date(); // الوقت الحالي بتنسيق UTC
 
-                // حساب الفرق بين الوقت الحالي ووقت بداية المباراة
-                const timeDiff = (currentTimeUTC - matchTimeUTC) / (1000 * 60); // الفرق بالدقائق
+            // حساب الفرق بين الوقت الحالي ووقت بداية المباراة
+            const timeDiff = (currentTimeUTC - matchTimeUTC) / (1000 * 60); // الفرق بالدقائق
 
-                // تحديد حالة المباراة
-                let matchStatus = "";
-                let matchStatusClass = "";
-                if (timeDiff < -15) {
-                    matchStatus = `الوقت: ${matchTimeUTC.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-                    matchStatusClass = "match-status";
-                } else if (timeDiff >= -15 && timeDiff < 0) {
-                    matchStatus = "تبدأ قريبًا";
-                    matchStatusClass = "match-status soon";
-                } else if (timeDiff >= 0 && timeDiff < 120) { // المباراة تستمر لمدة ساعتين
-                    matchStatus = "جارية الآن";
-                    matchStatusClass = "match-status live";
-                } else {
-                    // إذا مرت ساعتان على المباراة، يتم حذفها تلقائيًا
-                    db.collection("matches").doc(doc.id).delete();
-                    return; // لا نعرض المباراة إذا تم حذفها
-                }
+            // تحديد حالة المباراة
+            let matchStatus = "";
+            let matchStatusClass = "";
+            if (timeDiff < -15) {
+                matchStatus = `الوقت: ${matchTimeUTC.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                matchStatusClass = "match-status";
+            } else if (timeDiff >= -15 && timeDiff < 0) {
+                matchStatus = "تبدأ قريبًا";
+                matchStatusClass = "match-status soon";
+            } else if (timeDiff >= 0 && timeDiff < 120) { // المباراة تستمر لمدة ساعتين
+                matchStatus = "جارية الآن";
+                matchStatusClass = "match-status live";
+            } else {
+                // إذا مرت ساعتان على المباراة، يتم حذفها تلقائيًا
+                db.collection("matches").doc(doc.id).delete();
+                return; // لا نعرض المباراة إذا تم حذفها
+            }
 
-                matchItem.innerHTML = `
-                    <div class="teams-section">
-                        <div class="team">
-                            <img src="${team1Image}" alt="${match.team1}">
-                            <p>${match.team1}</p>
-                        </div>
-                        <div class="vs-time">
-                            <div class="vs">VS</div>
-                            <div class="${matchStatusClass}">${matchStatus}</div>
-                        </div>
-                        <div class="team">
-                            <img src="${team2Image}" alt="${match.team2}">
-                            <p>${match.team2}</p>
-                        </div>
+            matchItem.innerHTML = `
+                <div class="teams-section">
+                    <div class="team">
+                        <img src="${team1Image}" alt="${match.team1}">
+                        <p>${match.team1}</p>
                     </div>
-                    <div class="match-details">
-                        <p><span class="icon">🏆</span> ${match.matchLeague}</p>
-                        <p><span class="icon">🎤</span> ${match.commentator}</p>
+                    <div class="vs-time">
+                        <div class="vs">VS</div>
+                        <div class="${matchStatusClass}">${matchStatus}</div>
                     </div>
-                    <button class="watch-button ${timeDiff >= -15 && timeDiff < 120 ? 'active' : 'inactive'}" data-url="${match.channelUrl}" data-key="${match.key || ''}" ${timeDiff >= -15 && timeDiff < 120 ? '' : 'disabled'}>
-                        مشاهدة المباراة
-                    </button>
-                `;
+                    <div class="team">
+                        <img src="${team2Image}" alt="${match.team2}">
+                        <p>${match.team2}</p>
+                    </div>
+                </div>
+                <div class="match-details">
+                    <p><span class="icon">🏆</span> ${match.matchLeague}</p>
+                    <p><span class="icon">🎤</span> ${match.commentator}</p>
+                </div>
+                <button class="watch-button ${timeDiff >= -15 && timeDiff < 120 ? 'active' : 'inactive'}" data-url="${match.channelUrl}" data-key="${match.key || ''}" ${timeDiff >= -15 && timeDiff < 120 ? '' : 'disabled'}>
+                    مشاهدة المباراة
+                </button>
+            `;
 
-                matchesTable.appendChild(matchItem);
-            });
+            matchesTable.appendChild(matchItem);
+        });
 
-            // إضافة حدث لزر مشاهدة المباراة
-            document.querySelectorAll(".watch-button").forEach(button => {
-                button.addEventListener("click", () => {
-                    const url = button.getAttribute("data-url");
-                    const key = button.getAttribute("data-key");
-                    playChannel(url, key);
-                    matchesDialog.close(); // إغلاق الديالوج بعد الضغط على الزر
-                });
+        // إضافة حدث لزر مشاهدة المباراة
+        document.querySelectorAll(".watch-button").forEach(button => {
+            button.addEventListener("click", () => {
+                const url = button.getAttribute("data-url");
+                const key = button.getAttribute("data-key");
+                playChannel(url, key);
+                matchesDialog.close(); // إغلاق الديالوج بعد الضغط على الزر
             });
         });
-    }
+    });
+}
 
     // تحميل القنوات عند بدء التشغيل
     loadChannels();
