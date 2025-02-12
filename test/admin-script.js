@@ -311,6 +311,7 @@ function editMatch(matchId) {
         showPage("edit-match");
     });
 }
+}
 
 document.getElementById("save-match-btn").addEventListener("click", () => {
     const team1 = document.getElementById("edit-team1").value;
