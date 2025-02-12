@@ -60,39 +60,38 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // تشغيل القناة
     function playChannel(url, key) {
-        console.log("تشغيل القناة:", url); // فحص الرابط
-        console.log("المفتاح:", key); // فحص المفتاح
+    console.log("تشغيل القناة:", url); // فحص الرابط
+    console.log("المفتاح:", key); // فحص المفتاح
 
-        if (!url) {
-            console.error("رابط القناة غير موجود!");
-            return;
-        }
-
-        const config = {
-            playlist: [{
-                sources: [{
-                    file: url,
-                    type: getStreamType(url), // تحديد نوع الملف تلقائيًا
-                    drm: key ? {
-                        clearkey: {
-                            keyId: key.split(":")[0], // keyId
-                            key: key.split(":")[1],   // key
-                            robustnessLevel: "SW_SECURE_CRYPTO" // تحديد مستوى أمان أعلى
-                        }
-                    } : null
-                }]
-            }],
-            width: "100%",
-            height: "100%",
-            autostart: true,
-            cast: {}, // إزالة ميزة Chromecast
-            sharing: false
-        };
-
-        // إعادة تهيئة المشغل
-        jwplayer("player").setup(config);
+    if (!url) {
+        console.error("رابط القناة غير موجود!");
+        return;
     }
 
+    const config = {
+        playlist: [{
+            sources: [{
+                file: url,
+                type: getStreamType(url), // تحديد نوع الملف تلقائيًا
+                drm: key ? {
+                    clearkey: {
+                        keyId: key.split(":")[0], // keyId
+                        key: key.split(":")[1],   // key
+                        robustnessLevel: "SW_SECURE_CRYPTO" // تحديد مستوى أمان أعلى
+                    }
+                } : null
+            }]
+        }],
+        width: "100%",
+        height: "100%",
+        autostart: true,
+        cast: {}, // إزالة ميزة Chromecast
+        sharing: false
+    };
+
+    // إعادة تهيئة المشغل
+    jwplayer("player").setup(config);
+}
     // تحديد نوع الملف تلقائيًا
     function getStreamType(url) {
         if (url.includes(".m3u8")) {
