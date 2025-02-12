@@ -82,48 +82,63 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     // تشغيل القناة
-    function playChannel(url, key) {
-        if (!url) {
-            console.error("رابط القناة غير موجود!");
-            return;
-        }
-
-        const config = {
-            playlist: [{
-                sources: [{
-                    file: url,
-                    type: getStreamType(url),
-                    drm: key ? {
-                        clearkey: {
-                            keyId: key.split(":")[0],
-                            key: key.split(":")[1],
-                            robustnessLevel: "SW_SECURE_CRYPTO"
-                        }
-                    } : null
-                }]
-            }],
-            width: "100%",
-            height: "100%",
-            autostart: true,
-            cast: {},
-            sharing: false
-        };
-
-        const playerInstance = jwplayer("player").setup(config);
-
-        // إذا كان الجهاز هاتف، قم بإضافة دعم للوضع الأفقي (Landscape) عند الضغط على زر تكبير الشاشة
-        if (isMobile) {
-            playerInstance.on('fullscreen', function(event) {
-                if (event.fullscreen) {
-                    screen.orientation.lock('landscape').catch(() => {
-                        console.log("لم يتمكن المتصفح من قفل الشاشة في الوضع الأفقي.");
-                    });
-                } else {
-                    screen.orientation.unlock();
-                }
-            });
-        }
+    // تشغيل القناة
+function playChannel(url, key) {
+    if (!url) {
+        console.error("رابط القناة غير موجود!");
+        return;
     }
+
+    const config = {
+        playlist: [{
+            sources: [{
+                file: url,
+                type: getStreamType(url),
+                drm: key ? {
+                    clearkey: {
+                        keyId: key.split(":")[0],
+                        key: key.split(":")[1],
+                        robustnessLevel: "SW_SECURE_CRYPTO"
+                    }
+                } : null
+            }]
+        }],
+        width: "100%",
+        height: "100%",
+        autostart: true,
+        cast: {},
+        sharing: false
+    };
+
+    const playerInstance = jwplayer("player").setup(config);
+
+    // إذا كان الجهاز هاتف، قم بإضافة دعم للوضع الأفقي (Landscape) عند الضغط على زر تكبير الشاشة
+    if (isMobile) {
+        playerInstance.on('fullscreen', function(event) {
+            if (event.fullscreen) {
+                // قفل الشاشة في الوضع الأفقي (Landscape)
+                screen.orientation.lock('landscape').catch(() => {
+                    console.log("لم يتمكن المتصفح من قفل الشاشة في الوضع الأفقي.");
+                });
+
+                // جعل الفيديو يملأ الشاشة بالكامل (Stretch and Fill)
+                const playerElement = document.getElementById("player");
+                playerElement.style.objectFit = "cover"; // لجعل الفيديو يملأ الشاشة
+                playerElement.style.width = "100vw"; // عرض الشاشة بالكامل
+                playerElement.style.height = "100vh"; // ارتفاع الشاشة بالكامل
+            } else {
+                // إعادة الشاشة إلى الوضع الطبيعي (Portrait)
+                screen.orientation.unlock();
+
+                // إعادة الفيديو إلى الحجم الطبيعي
+                const playerElement = document.getElementById("player");
+                playerElement.style.objectFit = "contain"; // إعادة الفيديو إلى الحجم الطبيعي
+                playerElement.style.width = "100%"; // عرض عادي
+                playerElement.style.height = "100%"; // ارتفاع عادي
+            }
+        });
+    }
+}
 
     // تحديد نوع الملف تلقائيًا
     function getStreamType(url) {
