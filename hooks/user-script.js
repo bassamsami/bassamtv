@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function() {
         themeToggle.innerHTML = document.body.classList.contains("dark-theme") ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     });
 
-    // تحميل القنوات
+    
     // وظيفة التمرير بين القنوات
 function scrollChannels(groupId, amount) {
     const groupSection = document.querySelector(`[data-group-id="${groupId}"]`);
