@@ -1,157 +1,291 @@
-document.addEventListener("DOMContentLoaded", function() {
-    // تعريف المتغيرات
-    const themeToggle = document.getElementById("theme-toggle");
-    const channelsList = document.getElementById("channels-list");
-    const searchInput = document.getElementById("search-input");
-    const clearSearch = document.getElementById("clear-search");
-    const matchesButton = document.getElementById("matches-button");
-    const matchesDialog = document.getElementById("matches-dialog");
-    const closeDialog = document.getElementById("close-dialog");
-    const toggleSidebar = document.getElementById("toggle-sidebar");
-    const sidebar = document.getElementById("sidebar");
+let currentGroupId = null;
+let currentChannelId = null;
+let currentMatchId = null;
 
-    let userTimeOffset = 0; // فارق التوقيت بين التوقيت المحلي والتوقيت العالمي
+document.addEventListener("DOMContentLoaded", () => {
+    loadGroups();
+    loadGroupsInSelect();
+    loadChannelsInSelect();
+    loadMatches();
+});
 
-    // تبديل الثيم
-    themeToggle.addEventListener("click", () => {
-        document.body.classList.toggle("dark-theme");
-        themeToggle.innerHTML = document.body.classList.contains("dark-theme") ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+// عرض الصفحة المحددة
+function showPage(pageId) {
+    document.querySelectorAll(".page").forEach((page) => {
+        page.style.display = "none";
     });
+    document.getElementById(pageId).style.display = "block";
+}
 
-    // إظهار/إخفاء القائمة الجانبية
-    toggleSidebar.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-    });
+// تحميل المجموعات في القائمة المنسدلة
+function loadGroupsInSelect() {
+    const groupSelect = document.getElementById("channel-group");
+    if (groupSelect) {
+        groupSelect.innerHTML = "<option value=''>اختر مجموعة</option>";
 
-    // تحميل القنوات
-    function loadChannels() {
-        channelsList.innerHTML = "";
-        db.collection("groups").orderBy("createdAt", "asc").get().then((groupsSnapshot) => {
-            groupsSnapshot.forEach((groupDoc) => {
-                const group = groupDoc.data();
-                const groupSection = document.createElement("div");
-                groupSection.classList.add("group-section");
-                groupSection.innerHTML = `<h3 class="group-name">${group.name}</h3>`;
-                channelsList.appendChild(groupSection);
-
-                db.collection("channels").where("group", "==", groupDoc.id).orderBy("createdAt", "asc").get().then((channelsSnapshot) => {
-                    channelsSnapshot.forEach((channelDoc) => {
-                        const channel = channelDoc.data();
-                        const channelCard = document.createElement("div");
-                        channelCard.classList.add("channel-card");
-                        channelCard.innerHTML = `
-                            <img src="${channel.image}" alt="${channel.name}">
-                            <p>${channel.name}</p>
-                        `;
-                        channelCard.setAttribute("data-url", channel.url);
-                        channelCard.setAttribute("data-key", channel.key || ""); // Key ID:Key
-                        groupSection.appendChild(channelCard);
-
-                        channelCard.addEventListener("click", () => {
-                            const url = channelCard.getAttribute("data-url");
-                            const key = channelCard.getAttribute("data-key");
-                            playChannel(url, key);
-                        });
-                    });
+        db.collection("groups")
+            .orderBy("createdAt", "asc")
+            .get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const option = document.createElement("option");
+                    option.value = doc.id;
+                    option.textContent = doc.data().name;
+                    groupSelect.appendChild(option);
                 });
             });
-        });
     }
+}
 
-    // تشغيل القناة
-    function playChannel(url, key) {
-        console.log("تشغيل القناة:", url); // فحص الرابط
-        console.log("المفتاح:", key); // فحص المفتاح
+// تحميل القنوات في القائمة المنسدلة
+function loadChannelsInSelect() {
+    const channelSelect = document.getElementById("match-channel");
+    const editChannelSelect = document.getElementById("edit-match-channel");
+    if (channelSelect && editChannelSelect) {
+        channelSelect.innerHTML = "<option value=''>اختر قناة</option>";
+        editChannelSelect.innerHTML = "<option value=''>اختر قناة</option>";
 
-        if (!url) {
-            console.error("رابط القناة غير موجود!");
-            return;
-        }
-
-        const config = {
-            playlist: [{
-                sources: [{
-                    file: url,
-                    type: getStreamType(url), // تحديد نوع الملف تلقائيًا
-                    drm: key ? {
-                        clearkey: {
-                            keyId: key.split(":")[0], // keyId
-                            key: key.split(":")[1],   // key
-                            robustnessLevel: "SW_SECURE_CRYPTO" // تحديد مستوى أمان أعلى
-                        }
-                    } : null
-                }]
-            }],
-            width: "100%",
-            height: "100%",
-            autostart: true,
-            cast: {}, // إزالة ميزة Chromecast
-            sharing: false
-        };
-
-        // إعادة تهيئة المشغل
-        jwplayer("player").setup(config);
-    }
-
-    // تحديد نوع الملف تلقائيًا
-    function getStreamType(url) {
-        if (url.includes(".m3u8")) {
-            return "hls";
-        } else if (url.includes(".mpd")) {
-            return "dash";
-        } else if (url.includes(".mp4") || url.includes(".m4v")) {
-            return "mp4";
-        } else {
-            return "auto"; // JW Player سيحاول تحديد النوع تلقائيًا
-        }
-    }
-
-    // البحث عن القنوات
-    searchInput.addEventListener("input", () => {
-        const searchTerm = searchInput.value.toLowerCase();
-        document.querySelectorAll(".group-section").forEach((group) => {
-            const groupName = group.querySelector(".group-name").textContent.toLowerCase();
-            const channels = group.querySelectorAll(".channel-card");
-            let hasVisibleChannels = false;
-
-            channels.forEach((channel) => {
-                const channelName = channel.querySelector("p").textContent.toLowerCase();
-                if (channelName.includes(searchTerm)) {
-                    channel.style.display = "flex";
-                    hasVisibleChannels = true;
-                } else {
-                    channel.style.display = "none";
-                }
+        db.collection("channels")
+            .orderBy("createdAt", "asc")
+            .get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const channel = doc.data();
+                    const option = document.createElement("option");
+                    option.value = doc.id;
+                    option.textContent = channel.name;
+                    channelSelect.appendChild(option.cloneNode(true));
+                    editChannelSelect.appendChild(option);
+                });
             });
+    }
+}
 
-            group.style.display = hasVisibleChannels || groupName.includes(searchTerm) ? "block" : "none";
-        });
+// تحميل المجموعات
+function loadGroups() {
+    const groupsList = document.getElementById("groups-list");
+    if (groupsList) {
+        groupsList.innerHTML = "";
+
+        db.collection("groups")
+            .orderBy("createdAt", "asc")
+            .get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const group = doc.data();
+                    const groupItem = document.createElement("div");
+                    groupItem.classList.add("group-item");
+                    groupItem.innerHTML = `
+                        <span>${group.name}</span>
+                        <div>
+                            <button onclick="editGroup('${doc.id}')">تعديل</button>
+                            <button onclick="deleteGroup('${doc.id}')">حذف</button>
+                            <button onclick="viewChannels('${doc.id}')">عرض القنوات</button>
+                        </div>
+                    `;
+                    groupsList.appendChild(groupItem);
+                });
+            });
+    }
+}
+
+// تحميل القنوات
+function loadChannels(groupId) {
+    const channelsGrid = document.getElementById("channels-grid");
+    if (channelsGrid) {
+        channelsGrid.innerHTML = "";
+
+        db.collection("channels")
+            .where("group", "==", groupId)
+            .orderBy("createdAt", "asc")
+            .get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const channel = doc.data();
+                    const channelCard = document.createElement("div");
+                    channelCard.classList.add("channel-card");
+                    channelCard.innerHTML = `
+                        <img src="${channel.image}" alt="${channel.name}" onerror="this.src='default-logo.png';">
+                        <p>${channel.name}</p>
+                        <button onclick="editChannel('${doc.id}')">تعديل</button>
+                        <button onclick="deleteChannel('${doc.id}')">حذف</button>
+                    `;
+                    channelsGrid.appendChild(channelCard);
+                });
+            });
+    }
+}
+
+// عرض القنوات
+function viewChannels(groupId) {
+    currentGroupId = groupId;
+    showPage("view-channels");
+    loadChannels(groupId);
+}
+
+// إضافة مجموعة
+document.getElementById("add-group-btn").addEventListener("click", () => {
+    const groupName = document.getElementById("group-name").value;
+    if (groupName) {
+        db.collection("groups").add({
+            name: groupName,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("تمت إضافة المجموعة بنجاح");
+            loadGroups();
+            loadGroupsInSelect();
+        }).catch((error) => alert("حدث خطأ: " + error));
+    }
+});
+
+// تعديل مجموعة
+function editGroup(groupId) {
+    const newName = prompt("أدخل الاسم الجديد للمجموعة:");
+    if (newName) {
+        db.collection("groups").doc(groupId).update({ name: newName })
+            .then(() => {
+                alert("تم تعديل المجموعة بنجاح");
+                loadGroups();
+                loadGroupsInSelect();
+            })
+            .catch((error) => alert("حدث خطأ: " + error));
+    }
+}
+
+// حذف مجموعة
+function deleteGroup(groupId) {
+    if (confirm("هل أنت متأكد من حذف هذه المجموعة؟")) {
+        db.collection("groups").doc(groupId).delete()
+            .then(() => {
+                alert("تم حذف المجموعة بنجاح");
+                loadGroups();
+                loadGroupsInSelect();
+            })
+            .catch((error) => alert("حدث خطأ: " + error));
+    }
+}
+
+// إضافة قناة
+document.getElementById("add-channel-btn").addEventListener("click", () => {
+    const channelName = document.getElementById("channel-name").value;
+    const channelUrl = document.getElementById("channel-url").value;
+    const channelImage = document.getElementById("channel-image").value;
+    const channelKey = document.getElementById("channel-key").value; // Key ID:Key
+    const channelGroup = document.getElementById("channel-group").value;
+
+    if (channelName && channelUrl && channelImage && channelGroup) {
+        db.collection("channels").add({
+            name: channelName,
+            url: channelUrl,
+            image: channelImage,
+            key: channelKey || "", // Key ID:Key (اختياري)
+            group: channelGroup,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("تمت إضافة القناة بنجاح");
+            loadChannels(channelGroup);
+            showPage("view-channels");
+        }).catch((error) => alert("حدث خطأ: " + error));
+    } else {
+        alert("يرجى ملء جميع الحقول المطلوبة");
+    }
+});
+
+// تعديل قناة
+function editChannel(channelId) {
+    currentChannelId = channelId;
+    db.collection("channels").doc(channelId).get().then((doc) => {
+        const channel = doc.data();
+        document.getElementById("channel-name").value = channel.name;
+        document.getElementById("channel-url").value = channel.url;
+        document.getElementById("channel-image").value = channel.image;
+        document.getElementById("channel-key").value = channel.key || ""; // Key ID:Key
+        document.getElementById("channel-group").value = channel.group;
+
+        document.getElementById("add-channel-btn").style.display = "none";
+        document.getElementById("edit-channel-btn").style.display = "inline-block";
+
+        showPage("add-channel");
     });
+}
 
-    // مسح البحث
-    clearSearch.addEventListener("click", () => {
-        searchInput.value = "";
-        document.querySelectorAll(".group-section, .channel-card").forEach((element) => {
-            element.style.display = "block";
-        });
-    });
+// حفظ تعديلات القناة
+document.getElementById("edit-channel-btn").addEventListener("click", () => {
+    const name = document.getElementById("channel-name").value;
+    const url = document.getElementById("channel-url").value;
+    const image = document.getElementById("channel-image").value;
+    const key = document.getElementById("channel-key").value; // Key ID:Key
+    const group = document.getElementById("channel-group").value;
 
-    // عرض جدول المباريات
-    matchesButton.addEventListener("click", () => {
-        matchesDialog.showModal();
-        loadMatches();
-    });
+    if (name && url && image && group) {
+        db.collection("channels").doc(currentChannelId).update({
+            name: name,
+            url: url,
+            image: image,
+            key: key || "", // Key ID:Key (اختياري)
+            group: group
+        }).then(() => {
+            alert("تم تعديل القناة بنجاح");
+            loadChannels(currentGroupId);
+            showPage("view-channels");
+        }).catch((error) => alert("حدث خطأ: " + error));
+    } else {
+        alert("يرجى ملء جميع الحقول المطلوبة");
+    }
+});
 
-    // إغلاق جدول المباريات
-    closeDialog.addEventListener("click", () => {
-        matchesDialog.close();
-    });
+// حذف قناة
+function deleteChannel(channelId) {
+    if (confirm("هل أنت متأكد من حذف هذه القناة؟")) {
+        db.collection("channels").doc(channelId).delete()
+            .then(() => {
+                alert("تم حذف القناة بنجاح");
+                loadChannels(currentGroupId);
+            })
+            .catch((error) => alert("حدث خطأ: " + error));
+    }
+}
 
-    // تحميل المباريات
-    function loadMatches() {
-    const matchesTable = document.getElementById("matches-table");
-    if (matchesTable) {
-        matchesTable.innerHTML = "";
+// إضافة مباراة
+document.getElementById("add-match-btn").addEventListener("click", () => {
+    const team1 = document.getElementById("team1").value;
+    const team2 = document.getElementById("team2").value;
+    const team1Image = document.getElementById("team1-image").value;
+    const team2Image = document.getElementById("team2-image").value;
+    const matchTime = document.getElementById("match-time").value;
+    const matchLeague = document.getElementById("match-league").value;
+    const commentator = document.getElementById("commentator").value;
+    const channelUrl = document.getElementById("channel-url").value; // رابط القناة (مطلوب)
+    const channelKey = document.getElementById("channel-key").value; // Key ID:Key (اختياري)
+
+    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
+        const matchTimeUTC = new Date(matchTime).toISOString();
+
+        db.collection("matches").add({
+            team1: team1,
+            team2: team2,
+            team1Image: team1Image,
+            team2Image: team2Image,
+            matchTime: matchTimeUTC,
+            matchLeague: matchLeague,
+            commentator: commentator,
+            channelUrl: channelUrl, // رابط القناة (مطلوب)
+            key: channelKey || "", // Key ID:Key (اختياري)
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("تمت إضافة المباراة بنجاح");
+            loadMatches();
+        }).catch((error) => alert("حدث خطأ: " + error));
+    } else {
+        alert("يرجى ملء جميع الحقول المطلوبة");
+    }
+});
+
+// تحميل المباريات
+function loadMatches() {
+    const matchesGrid = document.getElementById("matches-grid");
+    if (matchesGrid) {
+        matchesGrid.innerHTML = "";
 
         db.collection("matches")
             .orderBy("createdAt", "asc")
@@ -159,50 +293,20 @@ document.addEventListener("DOMContentLoaded", function() {
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
                     const match = doc.data();
-                    console.log("رابط صورة الفريق الأول:", match.team1Image); // للتأكد من أن القيمة صحيحة
-                    console.log("رابط صورة الفريق الثاني:", match.team2Image); // للتأكد من أن القيمة صحيحة
-
-                    const matchItem = document.createElement("div");
-                    matchItem.classList.add("match-item");
-
-                    const team1Image = match.team1Image;
-                    const team2Image = match.team2Image;
-                    const matchTimeUTC = new Date(match.matchTime); // وقت بداية المباراة بتنسيق UTC
-                    const currentTimeUTC = new Date(); // الوقت الحالي بتنسيق UTC
-
-                    // حساب الفرق بين الوقت الحالي ووقت بداية المباراة
-                    const timeDiff = (currentTimeUTC - matchTimeUTC) / (1000 * 60); // الفرق بالدقائق
-
-                    // تحديد حالة المباراة
-                    let matchStatus = "";
-                    let matchStatusClass = "";
-                    if (timeDiff < -15) {
-                        matchStatus = `الوقت: ${matchTimeUTC.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-                        matchStatusClass = "match-status";
-                    } else if (timeDiff >= -15 && timeDiff < 0) {
-                        matchStatus = "تبدأ قريبًا";
-                        matchStatusClass = "match-status soon";
-                    } else if (timeDiff >= 0 && timeDiff < 120) { // المباراة تستمر لمدة ساعتين
-                        matchStatus = "جارية الآن";
-                        matchStatusClass = "match-status live";
-                    } else {
-                        // إذا مرت ساعتان على المباراة، يتم حذفها تلقائيًا
-                        db.collection("matches").doc(doc.id).delete();
-                        return; // لا نعرض المباراة إذا تم حذفها
-                    }
-
-                    matchItem.innerHTML = `
+                    const matchCard = document.createElement("div");
+                    matchCard.classList.add("match-card");
+                    matchCard.innerHTML = `
                         <div class="teams-section">
                             <div class="team">
-                                <img src="${team1Image}" alt="${match.team1}" onerror="this.src='default-logo.png';">
+                                <img src="${match.team1Image}" alt="${match.team1}" onerror="this.src='default-logo.png';">
                                 <p>${match.team1}</p>
                             </div>
                             <div class="vs-time">
                                 <div class="vs">VS</div>
-                                <div class="${matchStatusClass}">${matchStatus}</div>
+                                <div class="match-status">الوقت: ${new Date(match.matchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                             </div>
                             <div class="team">
-                                <img src="${team2Image}" alt="${match.team2}" onerror="this.src='default-logo.png';">
+                                <img src="${match.team2Image}" alt="${match.team2}" onerror="this.src='default-logo.png';">
                                 <p>${match.team2}</p>
                             </div>
                         </div>
@@ -210,32 +314,77 @@ document.addEventListener("DOMContentLoaded", function() {
                             <p><span class="icon">🏆</span> ${match.matchLeague}</p>
                             <p><span class="icon">🎤</span> ${match.commentator}</p>
                         </div>
-                        <button class="watch-button ${timeDiff >= -15 && timeDiff < 120 ? 'active' : 'inactive'}" data-url="${match.channelUrl}" data-key="${match.key || ''}" ${timeDiff >= -15 && timeDiff < 120 ? '' : 'disabled'}>
-                            مشاهدة المباراة
-                        </button>
+                        <button onclick="editMatch('${doc.id}')">تعديل</button>
+                        <button onclick="deleteMatch('${doc.id}')">حذف</button>
                     `;
-
-                    matchesTable.appendChild(matchItem);
+                    matchesGrid.appendChild(matchCard);
                 });
-            }).catch((error) => {
-                console.error("حدث خطأ أثناء تحميل المباريات:", error);
-                alert("حدث خطأ: " + error.message);
             });
     }
 }
 
-            // إضافة حدث لزر مشاهدة المباراة
-            document.querySelectorAll(".watch-button").forEach(button => {
-                button.addEventListener("click", () => {
-                    const url = button.getAttribute("data-url");
-                    const key = button.getAttribute("data-key");
-                    playChannel(url, key);
-                    matchesDialog.close(); // إغلاق الديالوج بعد الضغط على الزر
-                });
-            });
-        });
+// تعديل مباراة
+function editMatch(matchId) {
+    currentMatchId = matchId;
+    db.collection("matches").doc(matchId).get().then((doc) => {
+        const match = doc.data();
+        document.getElementById("edit-team1").value = match.team1;
+        document.getElementById("edit-team2").value = match.team2;
+        document.getElementById("edit-team1-image").value = match.team1Image;
+        document.getElementById("edit-team2-image").value = match.team2Image;
+        document.getElementById("edit-match-time").value = new Date(match.matchTime).toISOString().slice(0, 16);
+        document.getElementById("edit-match-league").value = match.matchLeague;
+        document.getElementById("edit-commentator").value = match.commentator;
+        document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (مطلوب)
+        document.getElementById("edit-channel-key").value = match.key || ""; // Key ID:Key (اختياري)
+
+        showPage("edit-match");
+    });
 }
 
-    // تحميل القنوات عند بدء التشغيل
-    loadChannels();
+// حفظ تعديلات المباراة
+document.getElementById("save-match-btn").addEventListener("click", () => {
+    const team1 = document.getElementById("edit-team1").value;
+    const team2 = document.getElementById("edit-team2").value;
+    const team1Image = document.getElementById("edit-team1-image").value;
+    const team2Image = document.getElementById("edit-team2-image").value;
+    const matchTime = document.getElementById("edit-match-time").value;
+    const matchLeague = document.getElementById("edit-match-league").value;
+    const commentator = document.getElementById("edit-commentator").value;
+    const channelUrl = document.getElementById("edit-channel-url").value; // رابط القناة (مطلوب)
+    const channelKey = document.getElementById("edit-channel-key").value; // Key ID:Key (اختياري)
+
+    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
+        const matchTimeUTC = new Date(matchTime).toISOString();
+
+        db.collection("matches").doc(currentMatchId).update({
+            team1: team1,
+            team2: team2,
+            team1Image: team1Image,
+            team2Image: team2Image,
+            matchTime: matchTimeUTC,
+            matchLeague: matchLeague,
+            commentator: commentator,
+            channelUrl: channelUrl, // رابط القناة (مطلوب)
+            key: channelKey || "", // Key ID:Key (اختياري)
+        }).then(() => {
+            alert("تم تعديل المباراة بنجاح");
+            loadMatches();
+            showPage("view-matches");
+        }).catch((error) => alert("حدث خطأ: " + error));
+    } else {
+        alert("يرجى ملء جميع الحقول المطلوبة");
+    }
 });
+
+// حذف مباراة
+function deleteMatch(matchId) {
+    if (confirm("هل أنت متأكد من حذف هذه المباراة؟")) {
+        db.collection("matches").doc(matchId).delete()
+            .then(() => {
+                alert("تم حذف المباراة بنجاح");
+                loadMatches();
+            })
+            .catch((error) => alert("حدث خطأ: " + error));
+    }
+}
