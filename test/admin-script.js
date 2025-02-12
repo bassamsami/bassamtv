@@ -266,7 +266,6 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
 });
-
 function loadMatches() {
     const matchesGrid = document.getElementById("matches-grid");
     if (matchesGrid) {
