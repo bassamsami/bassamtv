@@ -126,6 +126,7 @@ main {
 
 .group-section {
     margin-bottom: 15px;
+    position: relative;
 }
 
 .group-name {
@@ -139,6 +140,33 @@ main {
     text-align: center;
 }
 
+.channels-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px;
+}
+
+.scroll-button {
+    background: #ffcc00;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+}
+
+.scroll-left {
+    left: -20px;
+}
+
+.scroll-right {
+    right: -20px;
+}
+
 .channel-card {
     background: rgba(255, 255, 255, 0.8);
     padding: 10px;
@@ -150,7 +178,7 @@ main {
     display: flex;
     align-items: center;
     gap: 10px;
-    width: 200px;
+    min-width: 200px;
 }
 
 .channel-card:hover {
@@ -181,11 +209,29 @@ main {
     max-width: 900px;
     height: 500px;
     margin-left: 280px;
+    display: none;
 }
 
 #player {
     width: 100%;
     height: 100%;
+}
+
+.back-button {
+    background: #ffcc00;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    margin-top: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
 }
 
 .matches-button {
