@@ -149,10 +149,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // تحميل المباريات
     function loadMatches() {
-        const matchesTable = document.getElementById("matches-table");
-        matchesTable.innerHTML = "";
+    const matchesTable = document.getElementById("matches-table");
+    matchesTable.innerHTML = "";
 
-        db.collection("matches").orderBy("createdAt", "asc").get().then((querySnapshot) => {
+    db.collection("matches")
+        .orderBy("createdAt", "asc")
+        .get()
+        .then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
                 const match = doc.data();
                 const matchItem = document.createElement("div");
@@ -221,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
             });
         });
-    }
+}
 
     // تحميل القنوات عند بدء التشغيل
     loadChannels();
