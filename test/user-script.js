@@ -216,6 +216,8 @@ document.addEventListener("DOMContentLoaded", function() {
             button.addEventListener("click", () => {
                 const url = button.getAttribute("data-url");
                 const key = button.getAttribute("data-key");
+                console.log("الرابط:", url); // فحص الرابط
+                console.log("المفتاح:", key); // فحص المفتاح
                 playChannel(url, key);
                 matchesDialog.close(); // إغلاق الديالوج بعد الضغط على الزر
             });
