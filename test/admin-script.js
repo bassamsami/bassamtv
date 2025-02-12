@@ -246,7 +246,7 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
 
     // التأكد من أن جميع الحقول المطلوبة مملوءة
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
-        const matchTimeUTC = new Date(matchTime).toISOString();
+        const matchTimeUTC = new Date(matchTime).toISOString(); // تحويل الوقت إلى تنسيق UTC
 
         db.collection("matches").add({
             team1: team1,
@@ -258,16 +258,18 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
             commentator: commentator,
             channelUrl: channelUrl, // رابط القناة (مطلوب)
             key: channelKey || "", // Key ID:Key (اختياري)
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() // وقت الإنشاء
         }).then(() => {
             alert("تمت إضافة المباراة بنجاح");
-            loadMatches();
-        }).catch((error) => alert("حدث خطأ: " + error));
+            loadMatches(); // إعادة تحميل المباريات بعد الإضافة
+        }).catch((error) => {
+            console.error("حدث خطأ أثناء إضافة المباراة:", error);
+            alert("حدث خطأ: " + error.message);
+        });
     } else {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
 });
-
 function loadMatches() {
     const matchesGrid = document.getElementById("matches-grid");
     if (matchesGrid) {
@@ -292,6 +294,9 @@ function loadMatches() {
                     `;
                     matchesGrid.appendChild(matchCard);
                 });
+            }).catch((error) => {
+                console.error("حدث خطأ أثناء تحميل المباريات:", error);
+                alert("حدث خطأ: " + error.message);
             });
     }
 }
@@ -299,18 +304,25 @@ function loadMatches() {
 function editMatch(matchId) {
     currentMatchId = matchId;
     db.collection("matches").doc(matchId).get().then((doc) => {
-        const match = doc.data();
-        document.getElementById("edit-team1").value = match.team1;
-        document.getElementById("edit-team2").value = match.team2;
-        document.getElementById("edit-team1-image").value = match.team1Image;
-        document.getElementById("edit-team2-image").value = match.team2Image;
-        document.getElementById("edit-match-time").value = new Date(match.matchTime).toISOString().slice(0, 16);
-        document.getElementById("edit-match-league").value = match.matchLeague;
-        document.getElementById("edit-commentator").value = match.commentator;
-        document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (مطلوب)
-        document.getElementById("edit-channel-key").value = match.key || ""; // Key ID:Key (اختياري)
+        if (doc.exists) {
+            const match = doc.data();
+            document.getElementById("edit-team1").value = match.team1;
+            document.getElementById("edit-team2").value = match.team2;
+            document.getElementById("edit-team1-image").value = match.team1Image;
+            document.getElementById("edit-team2-image").value = match.team2Image;
+            document.getElementById("edit-match-time").value = new Date(match.matchTime).toISOString().slice(0, 16);
+            document.getElementById("edit-match-league").value = match.matchLeague;
+            document.getElementById("edit-commentator").value = match.commentator;
+            document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (مطلوب)
+            document.getElementById("edit-channel-key").value = match.key || ""; // Key ID:Key (اختياري)
 
-        showPage("edit-match");
+            showPage("edit-match");
+        } else {
+            alert("المباراة غير موجودة");
+        }
+    }).catch((error) => {
+        console.error("حدث خطأ أثناء تحميل المباراة:", error);
+        alert("حدث خطأ: " + error.message);
     });
 }
 
@@ -326,7 +338,7 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
     const channelKey = document.getElementById("edit-channel-key").value; // Key ID:Key (اختياري)
 
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
-        const matchTimeUTC = new Date(matchTime).toISOString();
+        const matchTimeUTC = new Date(matchTime).toISOString(); // تحويل الوقت إلى تنسيق UTC
 
         db.collection("matches").doc(currentMatchId).update({
             team1: team1,
@@ -340,9 +352,12 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
             key: channelKey || "", // Key ID:Key (اختياري)
         }).then(() => {
             alert("تم تعديل المباراة بنجاح");
-            loadMatches();
-            showPage("view-matches");
-        }).catch((error) => alert("حدث خطأ: " + error));
+            loadMatches(); // إعادة تحميل المباريات بعد التعديل
+            showPage("view-matches"); // العودة إلى صفحة عرض المباريات
+        }).catch((error) => {
+            console.error("حدث خطأ أثناء تعديل المباراة:", error);
+            alert("حدث خطأ: " + error.message);
+        });
     } else {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
@@ -352,8 +367,10 @@ function deleteMatch(matchId) {
         db.collection("matches").doc(matchId).delete()
             .then(() => {
                 alert("تم حذف المباراة بنجاح");
-                loadMatches();
-            })
-            .catch((error) => alert("حدث خطأ: " + error));
+                loadMatches(); // إعادة تحميل المباريات بعد الحذف
+            }).catch((error) => {
+                console.error("حدث خطأ أثناء حذف المباراة:", error);
+                alert("حدث خطأ: " + error.message);
+            });
     }
 }
