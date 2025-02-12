@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const channelCard = document.createElement("div");
                         channelCard.classList.add("channel-card");
                         channelCard.innerHTML = `
-                            <img src="${channel.image}" alt="${channel.name}" onerror="this.src='default-image.png'">
+                            <img src="${channel.image}" alt="${channel.name}">
                             <p>${channel.name}</p>
                         `;
                         channelCard.setAttribute("data-url", channel.url);
@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 matchItem.innerHTML = `
                     <div class="teams-section">
                         <div class="team">
-                            <img src="${team1Image}" alt="${match.team1}" onerror="this.src='default-image.png'">
+                            <img src="${team1Image}" alt="${match.team1}">
                             <p>${match.team1}</p>
                         </div>
                         <div class="vs-time">
@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <div class="${matchStatusClass}">${matchStatus}</div>
                         </div>
                         <div class="team">
-                            <img src="${team2Image}" alt="${match.team2}" onerror="this.src='default-image.png'">
+                            <img src="${team2Image}" alt="${match.team2}">
                             <p>${match.team2}</p>
                         </div>
                     </div>
