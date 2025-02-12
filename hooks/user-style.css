@@ -112,22 +112,22 @@ main {
 .group-section {
     margin-bottom: 15px;
     position: relative;
-    border: 2px solid #ffcc00; /* بوردر لكل Slide */
-    border-radius: 10px; /* زوايا مدورة */
-    padding: 10px; /* إضافة padding داخلي */
-    background: rgba(255, 255, 255, 0.9); /* خلفية لكل Slide */
+    border: 2px solid #ffcc00;
+    border-radius: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .group-name {
-    color: #ffcc00; /* لون النص */
+    color: #ffcc00;
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 10px;
-    padding: 10px; /* إضافة padding */
-    background: rgba(0, 0, 0, 0.8); /* خلفية اسم المجموعة */
-    border-radius: 5px; /* زوايا مدورة */
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
     text-align: center;
-    border: 2px solid #ffcc00; /* بوردر لاسم المجموعة */
+    border: 2px solid #ffcc00;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -230,27 +230,31 @@ main {
     box-sizing: border-box;
 }
 
-/* تنسيقات خاصة بوضع Full Screen على الأجهزة المحمولة */
-@media (max-width: 768px) {
-    #player-page {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw; /* عرض الشاشة بالكامل */
-        height: 100vh; /* ارتفاع الشاشة بالكامل */
-        padding: 0; /* إزالة الـ padding */
-        margin: 0; /* إزالة الـ margin */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: black; /* خلفية سوداء للشاشة */
-    }
+#player-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: black;
+}
 
-    #player {
-        width: 100vw !important; /* عرض الشاشة بالكامل */
-        height: 100vh !important; /* ارتفاع الشاشة بالكامل */
-        object-fit: cover; /* لجعل الفيديو يملأ الشاشة */
-    }
+#player {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
+
+/* عند الدخول في وضع Full Screen */
+#player-page.fullscreen #player {
+    object-fit: cover;
+    width: 100vw !important;
+    height: 100vh !important;
 }
 
 .back-button {
@@ -265,6 +269,7 @@ main {
     position: absolute;
     top: 20px;
     left: 20px;
+    z-index: 1001;
 }
 
 .matches-button {
