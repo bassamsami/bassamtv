@@ -252,17 +252,7 @@ document.addEventListener("DOMContentLoaded", function() {
         matchesPage.style.display = "none";
         channelsPage.style.display = "block";
     });
-
-    // التعامل مع زر الرجوع الخاص بالهاتف
-    window.addEventListener("popstate", function(event) {
-        if (event.state && event.state.page === "channels") {
-            channelsPage.style.display = "block";
-            playerPage.style.display = "none";
-        } else if (event.state && event.state.page === "matches") {
-            matchesPage.style.display = "block";
-            playerPage.style.display = "none";
-        }
-    });
+    
 
     // تحميل القنوات عند بدء التشغيل
     loadChannels();
