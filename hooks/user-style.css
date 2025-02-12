@@ -251,12 +251,6 @@ main {
         height: 100vh !important; /* ارتفاع الشاشة بالكامل */
         object-fit: cover; /* لجعل الفيديو يملأ الشاشة */
     }
-
-    .back-button {
-        top: 10px;
-        left: 10px;
-        z-index: 1001; /* للتأكد من ظهور الزر فوق الفيديو */
-    }
 }
 
 .back-button {
