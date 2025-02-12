@@ -248,28 +248,35 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
         const matchTimeUTC = new Date(matchTime).toISOString(); // تحويل الوقت إلى تنسيق UTC
 
-        db.collection("matches").add({
-            team1: team1,
-            team2: team2,
-            team1Image: team1Image,
-            team2Image: team2Image,
-            matchTime: matchTimeUTC,
-            matchLeague: matchLeague,
-            commentator: commentator,
-            channelUrl: channelUrl, // رابط القناة (مطلوب)
-            key: channelKey || "", // Key ID:Key (اختياري)
-            createdAt: firebase.firestore.FieldValue.serverTimestamp() // وقت الإنشاء
-        }).then(() => {
-            alert("تمت إضافة المباراة بنجاح");
-            loadMatches(); // إعادة تحميل المباريات بعد الإضافة
-        }).catch((error) => {
-            console.error("حدث خطأ أثناء إضافة المباراة:", error);
-            alert("حدث خطأ: " + error.message);
-        });
+       console.log("رابط القناة المرسل:", channelUrl); // للتأكد من أن القيمة صحيحة
+
+db.collection("matches").add({
+    team1: team1,
+    team2: team2,
+    team1Image: team1Image,
+    team2Image: team2Image,
+    matchTime: matchTimeUTC,
+    matchLeague: matchLeague,
+    commentator: commentator,
+    channelUrl: channelUrl, // رابط القناة (مطلوب)
+    key: channelKey || "", // Key ID:Key (اختياري)
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+}).then(() => {
+    alert("تمت إضافة المباراة بنجاح");
+    loadMatches(); // إعادة تحميل المباريات بعد الإضافة
+}).catch((error) => {
+    console.error("حدث خطأ أثناء إضافة المباراة:", error);
+    alert("حدث خطأ: " + error.message);
+});
     } else {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
+    if (!channelUrl) {
+    alert("يرجى إدخال رابط القناة");
+    return; // إيقاف الإضافة إذا كان الرابط فارغًا
+}
 });
+
 function loadMatches() {
     const matchesGrid = document.getElementById("matches-grid");
     if (matchesGrid) {
@@ -280,20 +287,22 @@ function loadMatches() {
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
-                    const match = doc.data();
-                    const matchCard = document.createElement("div");
-                    matchCard.classList.add("match-card");
-                    matchCard.innerHTML = `
-                        <p>${match.team1} vs ${match.team2}</p>
-                        <p>الوقت: ${new Date(match.matchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                        <p>الدوري: ${match.matchLeague}</p>
-                        <p>المعلق: ${match.commentator}</p>
-                        <p>القناة: ${match.channelUrl}</p>
-                        <button onclick="editMatch('${doc.id}')">تعديل</button>
-                        <button onclick="deleteMatch('${doc.id}')">حذف</button>
-                    `;
-                    matchesGrid.appendChild(matchCard);
-                });
+    const match = doc.data();
+    console.log("رابط القناة المستلم:", match.channelUrl); // للتأكد من أن القيمة صحيحة
+
+    const matchCard = document.createElement("div");
+    matchCard.classList.add("match-card");
+    matchCard.innerHTML = `
+        <p>${match.team1} vs ${match.team2}</p>
+        <p>الوقت: ${new Date(match.matchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+        <p>الدوري: ${match.matchLeague}</p>
+        <p>المعلق: ${match.commentator}</p>
+        <p>القناة: ${match.channelUrl}</p>
+        <button onclick="editMatch('${doc.id}')">تعديل</button>
+        <button onclick="deleteMatch('${doc.id}')">حذف</button>
+    `;
+    matchesGrid.appendChild(matchCard);
+});
             }).catch((error) => {
                 console.error("حدث خطأ أثناء تحميل المباريات:", error);
                 alert("حدث خطأ: " + error.message);
