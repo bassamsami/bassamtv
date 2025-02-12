@@ -33,6 +33,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 groupSection.innerHTML = `
                     <h3 class="group-name">${group.name}</h3>
                     <div class="channels-container"></div>
+                    <div class="navigation-buttons">
+                        <button class="nav-button left" onclick="scrollChannels('${groupDoc.id}', -150)"><i class="fas fa-chevron-left"></i></button>
+                        <button class="nav-button right" onclick="scrollChannels('${groupDoc.id}', 150)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
                 `;
                 channelsList.appendChild(groupSection);
 
@@ -64,6 +68,18 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
+
+    // وظيفة التمرير بين القنوات
+    window.scrollChannels = function(groupId, amount) {
+        const groupSection = document.querySelector(`.group-section[data-group-id="${groupId}"]`);
+        if (groupSection) {
+            const channelsContainer = groupSection.querySelector(".channels-container");
+            channelsContainer.scrollBy({
+                left: amount,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     // تشغيل القناة
     function playChannel(url, key) {
@@ -251,15 +267,6 @@ document.addEventListener("DOMContentLoaded", function() {
         matchesPage.style.display = "none";
         channelsPage.style.display = "block";
     });
-
-    // وظيفة التمرير بين القنوات
-    function scrollChannels(amount) {
-        const channelsContainer = document.querySelector(".channels-container");
-        channelsContainer.scrollBy({
-            left: amount,
-            behavior: 'smooth'
-        });
-    }
 
     // تحميل القنوات عند بدء التشغيل
     loadChannels();
