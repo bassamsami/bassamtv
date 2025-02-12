@@ -60,20 +60,21 @@
         </section>
 
         <!-- صفحة إضافة المباراة -->
-        <section id="add-match" class="page" style="display: none;">
-            <h2>إضافة مباراة</h2>
-            <input type="text" id="team1" placeholder="اسم الفريق الأول">
-            <input type="text" id="team1-image" placeholder="رابط صورة الفريق الأول">
-            <input type="text" id="team2" placeholder="اسم الفريق الثاني">
-            <input type="text" id="team2-image" placeholder="رابط صورة الفريق الثاني">
-            <input type="datetime-local" id="match-time" placeholder="موعد المباراة">
-            <input type="text" id="match-league" placeholder="الدوري">
-            <input type="text" id="commentator" placeholder="اسم المعلق">
-            <input type="text" id="channel-url" placeholder="رابط القناة (اختياري)">
-            <input type="text" id="channel-key" placeholder="Key ID:Key (اختياري)">
-            <button id="add-match-btn">إضافة مباراة</button>
-            <button class="back-button" onclick="showPage('view-matches')">رجوع</button>
-        </section>
+        <!-- صفحة إضافة المباراة -->
+<section id="add-match" class="page" style="display: none;">
+    <h2>إضافة مباراة</h2>
+    <input type="text" id="team1" placeholder="اسم الفريق الأول">
+    <input type="text" id="team1-image" placeholder="رابط صورة الفريق الأول">
+    <input type="text" id="team2" placeholder="اسم الفريق الثاني">
+    <input type="text" id="team2-image" placeholder="رابط صورة الفريق الثاني">
+    <input type="datetime-local" id="match-time" placeholder="موعد المباراة">
+    <input type="text" id="match-league" placeholder="الدوري">
+    <input type="text" id="commentator" placeholder="اسم المعلق">
+    <input type="text" id="match-channel-url" placeholder="رابط القناة (مطلوب)">
+    <input type="text" id="match-channel-key" placeholder="Key ID:Key (اختياري)">
+    <button id="add-match-btn">إضافة مباراة</button>
+    <button class="back-button" onclick="showPage('view-matches')">رجوع</button>
+</section>
 
         <!-- صفحة عرض المباريات -->
         <section id="view-matches" class="page" style="display: none;">
