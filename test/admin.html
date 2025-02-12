@@ -83,6 +83,21 @@
             </div>
             <button class="back-button" onclick="showPage('control-buttons')">رجوع</button>
         </section>
+        <!-- صفحة تعديل المباراة -->
+<section id="edit-match" class="page" style="display: none;">
+    <h2>تعديل مباراة</h2>
+    <input type="text" id="edit-team1" placeholder="اسم الفريق الأول">
+    <input type="text" id="edit-team1-image" placeholder="رابط صورة الفريق الأول">
+    <input type="text" id="edit-team2" placeholder="اسم الفريق الثاني">
+    <input type="text" id="edit-team2-image" placeholder="رابط صورة الفريق الثاني">
+    <input type="datetime-local" id="edit-match-time" placeholder="موعد المباراة">
+    <input type="text" id="edit-match-league" placeholder="الدوري">
+    <input type="text" id="edit-commentator" placeholder="اسم المعلق">
+    <input type="text" id="edit-channel-url" placeholder="رابط القناة (اختياري)">
+    <input type="text" id="edit-channel-key" placeholder="Key ID:Key (اختياري)">
+    <button id="save-match-btn">حفظ التعديلات</button>
+    <button class="back-button" onclick="showPage('view-matches')">رجوع</button>
+</section>
     </main>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
