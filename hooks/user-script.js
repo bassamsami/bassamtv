@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const channelCard = document.createElement("div");
                         channelCard.classList.add("channel-card");
                         channelCard.innerHTML = `
-                            <img src="${channel.image}" alt="${channel.name}">
+                            <img src="${channel.image}" alt="${channel.name}" onerror="this.src='default-image.png'">
                             <p>${channel.name}</p>
                         `;
                         channelCard.setAttribute("data-url", channel.url);
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 matchItem.innerHTML = `
                     <div class="teams-section">
                         <div class="team">
-                            <img src="${team1Image}" alt="${match.team1}">
+                            <img src="${team1Image}" alt="${match.team1}" onerror="this.src='default-image.png'">
                             <p>${match.team1}</p>
                         </div>
                         <div class="vs-time">
@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <div class="${matchStatusClass}">${matchStatus}</div>
                         </div>
                         <div class="team">
-                            <img src="${team2Image}" alt="${match.team2}">
+                            <img src="${team2Image}" alt="${match.team2}" onerror="this.src='default-image.png'">
                             <p>${match.team2}</p>
                         </div>
                     </div>
@@ -251,7 +251,15 @@ document.addEventListener("DOMContentLoaded", function() {
         matchesPage.style.display = "none";
         channelsPage.style.display = "block";
     });
-    
+
+    // وظيفة التمرير بين القنوات
+    function scrollChannels(amount) {
+        const channelsContainer = document.querySelector(".channels-container");
+        channelsContainer.scrollBy({
+            left: amount,
+            behavior: 'smooth'
+        });
+    }
 
     // تحميل القنوات عند بدء التشغيل
     loadChannels();
