@@ -160,6 +160,7 @@ document.getElementById("add-channel-btn").addEventListener("click", () => {
     const channelName = document.getElementById("channel-name").value;
     const channelUrl = document.getElementById("channel-url").value;
     const channelImage = document.getElementById("channel-image").value;
+    const channelKey = document.getElementById("channel-key").value; // مفتاح الحماية (اختياري)
     const channelGroup = document.getElementById("channel-group").value;
 
     if (channelName && channelUrl && channelImage && channelGroup) {
@@ -167,6 +168,7 @@ document.getElementById("add-channel-btn").addEventListener("click", () => {
             name: channelName,
             url: channelUrl,
             image: channelImage,
+            key: channelKey || "", // إضافة مفتاح الحماية (اختياري)
             group: channelGroup,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
@@ -199,6 +201,7 @@ document.getElementById("edit-channel-btn").addEventListener("click", () => {
     const name = document.getElementById("channel-name").value;
     const url = document.getElementById("channel-url").value;
     const image = document.getElementById("channel-image").value;
+    const key = document.getElementById("channel-key").value; // مفتاح الحماية (اختياري)
     const group = document.getElementById("channel-group").value;
 
     if (name && url && image && group) {
@@ -206,6 +209,7 @@ document.getElementById("edit-channel-btn").addEventListener("click", () => {
             name: name,
             url: url,
             image: image,
+            key: key || "", // إضافة مفتاح الحماية (اختياري)
             group: group
         }).then(() => {
             alert("تم تعديل القناة بنجاح");
@@ -236,9 +240,10 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
     const matchTime = document.getElementById("match-time").value;
     const matchLeague = document.getElementById("match-league").value;
     const commentator = document.getElementById("commentator").value;
-    const matchChannel = document.getElementById("match-channel").value;
+    const channelUrl = document.getElementById("channel-url").value; // رابط القناة (اختياري)
+    const channelKey = document.getElementById("channel-key").value; // مفتاح الحماية (اختياري)
 
-    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && matchChannel) {
+    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator) {
         const matchTimeUTC = new Date(matchTime).toISOString();
 
         db.collection("matches").add({
@@ -249,7 +254,8 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelId: matchChannel,
+            channelUrl: channelUrl || "", // إضافة رابط القناة (اختياري)
+            key: channelKey || "", // إضافة مفتاح الحماية (اختياري)
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert("تمت إضافة المباراة بنجاح");
