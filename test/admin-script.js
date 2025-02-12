@@ -241,10 +241,11 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
     const matchTime = document.getElementById("match-time").value;
     const matchLeague = document.getElementById("match-league").value;
     const commentator = document.getElementById("commentator").value;
-    const channelUrl = document.getElementById("channel-url").value; // رابط القناة (اختياري)
-    const channelKey = document.getElementById("channel-key").value; // Key ID:Key (اختياري)
+    const channelUrl = document.getElementById("match-channel-url").value; // رابط القناة (مطلوب)
+    const channelKey = document.getElementById("match-channel-key").value; // Key ID:Key (اختياري)
 
-    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator) {
+    // التأكد من أن جميع الحقول المطلوبة مملوءة
+    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
         const matchTimeUTC = new Date(matchTime).toISOString();
 
         db.collection("matches").add({
@@ -255,7 +256,7 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelUrl: channelUrl || "", // رابط القناة (اختياري)
+            channelUrl: channelUrl, // رابط القناة (مطلوب)
             key: channelKey || "", // Key ID:Key (اختياري)
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
@@ -306,7 +307,7 @@ function editMatch(matchId) {
         document.getElementById("edit-match-time").value = new Date(match.matchTime).toISOString().slice(0, 16);
         document.getElementById("edit-match-league").value = match.matchLeague;
         document.getElementById("edit-commentator").value = match.commentator;
-        document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (اختياري)
+        document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (مطلوب)
         document.getElementById("edit-channel-key").value = match.key || ""; // Key ID:Key (اختياري)
 
         showPage("edit-match");
@@ -321,10 +322,10 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
     const matchTime = document.getElementById("edit-match-time").value;
     const matchLeague = document.getElementById("edit-match-league").value;
     const commentator = document.getElementById("edit-commentator").value;
-    const channelUrl = document.getElementById("edit-channel-url").value; // رابط القناة (اختياري)
+    const channelUrl = document.getElementById("edit-channel-url").value; // رابط القناة (مطلوب)
     const channelKey = document.getElementById("edit-channel-key").value; // Key ID:Key (اختياري)
 
-    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator) {
+    if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
         const matchTimeUTC = new Date(matchTime).toISOString();
 
         db.collection("matches").doc(currentMatchId).update({
@@ -335,7 +336,7 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelUrl: channelUrl || "", // رابط القناة (اختياري)
+            channelUrl: channelUrl, // رابط القناة (مطلوب)
             key: channelKey || "", // Key ID:Key (اختياري)
         }).then(() => {
             alert("تم تعديل المباراة بنجاح");
@@ -346,7 +347,6 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
 });
-
 function deleteMatch(matchId) {
     if (confirm("هل أنت متأكد من حذف هذه المباراة؟")) {
         db.collection("matches").doc(matchId).delete()
