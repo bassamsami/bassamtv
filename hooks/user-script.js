@@ -244,7 +244,6 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (previousPage === "matches") {
             matchesPage.style.display = "block";
         }
-        history.pushState({ page: previousPage }, null, null); // إضافة حالة جديدة لتاريخ المتصفح
     });
 
     // زر الرجوع من جدول المباريات
