@@ -230,16 +230,33 @@ main {
     box-sizing: border-box;
 }
 
-#player-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
+/* تنسيقات خاصة بوضع Full Screen على الأجهزة المحمولة */
+@media (max-width: 768px) {
+    #player-page {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw; /* عرض الشاشة بالكامل */
+        height: 100vh; /* ارتفاع الشاشة بالكامل */
+        padding: 0; /* إزالة الـ padding */
+        margin: 0; /* إزالة الـ margin */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: black; /* خلفية سوداء للشاشة */
+    }
 
-#player {
-    width: 100%;
-    height: 80%;
+    #player {
+        width: 100vw !important; /* عرض الشاشة بالكامل */
+        height: 100vh !important; /* ارتفاع الشاشة بالكامل */
+        object-fit: cover; /* لجعل الفيديو يملأ الشاشة */
+    }
+
+    .back-button {
+        top: 10px;
+        left: 10px;
+        z-index: 1001; /* للتأكد من ظهور الزر فوق الفيديو */
+    }
 }
 
 .back-button {
