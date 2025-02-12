@@ -111,15 +111,76 @@ main {
 
 .group-section {
     margin-bottom: 15px;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 10px;
+    position: relative;
+    border: 2px solid #ffcc00; /* بوردر لكل Slide */
+    border-radius: 10px; /* زوايا مدورة */
+    padding: 10px; /* إضافة padding داخلي */
+    background: rgba(255, 255, 255, 0.9); /* خلفية لكل Slide */
+}
+
+.group-name {
+    color: #ffcc00; /* لون النص */
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 10px; /* إضافة padding */
+    background: rgba(0, 0, 0, 0.8); /* خلفية اسم المجموعة */
+    border-radius: 5px; /* زوايا مدورة */
+    text-align: center;
+    border: 2px solid #ffcc00; /* بوردر لاسم المجموعة */
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .channels-container {
-    display: inline-flex;
+    display: flex;
+    overflow-x: auto;
     gap: 10px;
     padding: 10px;
+    scroll-behavior: smooth;
+    position: relative;
+}
+
+/* إخفاء شريط التمرير */
+.channels-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* أزرار التنقل لكل مجموعة */
+.navigation-buttons {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.nav-button {
+    pointer-events: all;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.nav-button.left {
+    left: 10px;
+}
+
+.nav-button.right {
+    right: 10px;
 }
 
 .channel-card {
@@ -425,36 +486,6 @@ main {
 .dark-theme #theme-toggle {
     background: #ffcc00;
     color: black;
-}
-
-/* أزرار التنقل بين القنوات */
-.navigation-buttons {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    pointer-events: none;
-}
-
-.nav-button {
-    pointer-events: all;
-    background: rgba(0, 0, 0, 0.7);
-    border: none;
-    color: white;
-    font-size: 24px;
-    padding: 10px;
-    cursor: pointer;
-    z-index: 1000;
-}
-
-.nav-button.left {
-    left: 10px;
-}
-
-.nav-button.right {
-    right: 10px;
 }
 
 /* تحسين تنسيق الموقع للأجهزة المحمولة */
