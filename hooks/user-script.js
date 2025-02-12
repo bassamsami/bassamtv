@@ -220,6 +220,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // زر الرجوع
     backButton.addEventListener("click", () => {
+        // إيقاف تشغيل القناة عند الضغط على زر الرجوع
+        jwplayer("player").stop();
         playerPage.style.display = "none";
         if (previousPage === "channels") {
             channelsPage.style.display = "block";
