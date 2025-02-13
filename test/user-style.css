@@ -590,7 +590,7 @@ main {
 
     /* المشغل */
     #player-container {
-        height: 80vh; /* تقليل ارتفاع المشغل */
+        height: 60vh; /* تقليل ارتفاع المشغل */
         border-radius: 5px; /* تقليل زوايا التدوير */
     }
 
