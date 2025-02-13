@@ -590,12 +590,8 @@ main {
 
     /* المشغل */
     #player-container {
-        height: 50vh; /* تقليل ارتفاع المشغل */
+        height: 70vh; /* تقليل ارتفاع المشغل */
         border-radius: 5px; /* تقليل زوايا التدوير */
-    }
-
-    #player-placeholder {
-        font-size: 18px; /* تصغير حجم النص في المشغل */
     }
 
     /* القائمة الجانبية */
