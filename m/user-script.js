@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // دالة لجلب manifestUri و clearkeys من ملف PHP
-  async function fetchManifestAndKeys(phpUrl) {
+ async function fetchManifestAndKeys(phpUrl) {
     try {
         const response = await fetch(phpUrl);
         const text = await response.text();
