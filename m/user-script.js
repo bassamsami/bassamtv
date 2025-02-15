@@ -112,7 +112,8 @@ document.addEventListener("DOMContentLoaded", function () {
         clearkey: {
             keyId: finalKey.split(':')[0],
             key: finalKey.split(':')[1]
-        }
+        },
+        robustness: 'SW_SECURE_CRYPTO' // إضافة robustness
     } : null;
 
     // إعداد المشغل
