@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // دالة لجلب manifestUri و clearkeys من ملف PHP
-    async function fetchManifestAndKeys(phpUrl) {
+   async function fetchManifestAndKeys(phpUrl) {
     try {
         const response = await fetch(phpUrl);
         const text = await response.text();
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
     if (url.endsWith('.php')) {
         const { manifestUri, keyid, key } = await fetchManifestAndKeys(url);
-        if (manifestUri) finalUrl = manifestUri;
+        if (manifestUri) finalUrl = manifestUri; // استخدام الرابط المسحوب
         if (keyid && key) finalKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
     }
 
