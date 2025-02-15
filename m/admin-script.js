@@ -19,14 +19,15 @@ async function fetchManifestAndKeys(phpUrl) {
         const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
         const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
 
-        // استخراج مفاتيح clearkeys
-        const clearkeysMatch = text.match(/clearKeys\s*:\s*({[^}]+})/);
-        const clearkeys = clearkeysMatch ? JSON.parse(clearkeysMatch[1].replace(/'/g, '"')) : null;
+        // استخراج keyid و key مباشرةً
+        const clearkeysMatch = text.match(/clearKeys\s*:\s*{\s*'([^']+)'\s*:\s*'([^']+)'/);
+        const keyid = clearkeysMatch ? clearkeysMatch[1] : null;
+        const key = clearkeysMatch ? clearkeysMatch[2] : null;
 
-        return { manifestUri, clearkeys };
+        return { manifestUri, keyid, key };
     } catch (error) {
         console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
-        return { manifestUri: null, clearkeys: null };
+        return { manifestUri: null, keyid: null, key: null };
     }
 }
 
@@ -204,9 +205,9 @@ document.getElementById("add-channel-btn").addEventListener("click", async () =>
 
         // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
         if (channelUrl.endsWith('.php')) {
-            const { manifestUri, clearkeys } = await fetchManifestAndKeys(channelUrl);
+            const { manifestUri, keyid, key } = await fetchManifestAndKeys(channelUrl);
             if (manifestUri) finalChannelUrl = manifestUri;
-            if (clearkeys) finalChannelKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
+            if (keyid && key) finalChannelKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
         }
 
         db.collection("channels").add({
@@ -298,9 +299,9 @@ document.getElementById("add-match-btn").addEventListener("click", async () => {
 
         // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
         if (channelUrl.endsWith('.php')) {
-            const { manifestUri, clearkeys } = await fetchManifestAndKeys(channelUrl);
+            const { manifestUri, keyid, key } = await fetchManifestAndKeys(channelUrl);
             if (manifestUri) finalChannelUrl = manifestUri;
-            if (clearkeys) finalChannelKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
+            if (keyid && key) finalChannelKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
         }
 
         db.collection("matches").add({
@@ -325,6 +326,7 @@ document.getElementById("add-match-btn").addEventListener("click", async () => {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
 });
+
 function loadMatches() {
     const matchesGrid = document.getElementById("matches-grid");
     if (matchesGrid) {

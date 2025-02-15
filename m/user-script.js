@@ -70,93 +70,80 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // دالة لجلب manifestUri و clearkeys من ملف PHP
     async function fetchManifestAndKeys(phpUrl) {
-        try {
-            const response = await fetch(phpUrl);
-            const text = await response.text();
+    try {
+        const response = await fetch(phpUrl);
+        const text = await response.text();
 
-            // استخراج رابط الـ manifestUri
-            const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
-            const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
+        // استخراج رابط الـ manifestUri
+        const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
+        const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
 
-            // استخراج مفاتيح clearkeys
-            const clearkeysMatch = text.match(/clearKeys\s*:\s*({[^}]+})/);
-            const clearkeys = clearkeysMatch ? JSON.parse(clearkeysMatch[1].replace(/'/g, '"')) : null;
+        // استخراج keyid و key مباشرةً
+        const clearkeysMatch = text.match(/clearKeys\s*:\s*{\s*'([^']+)'\s*:\s*'([^']+)'/);
+        const keyid = clearkeysMatch ? clearkeysMatch[1] : null;
+        const key = clearkeysMatch ? clearkeysMatch[2] : null;
 
-            return { manifestUri, clearkeys };
-        } catch (error) {
-            console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
-            return { manifestUri: null, clearkeys: null };
-        }
+        return { manifestUri, keyid, key };
+    } catch (error) {
+        console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
+        return { manifestUri: null, keyid: null, key: null };
     }
+}
 
     // دالة لتحويل clearkeys إلى التنسيق المطلوب
-    function formatClearkeys(clearkeys) {
-        if (typeof clearkeys === 'object') {
-            // إذا كانت clearkeys بتنسيق JSON، تحويلها إلى التنسيق المطلوب
-            const keyid = Object.keys(clearkeys)[0];
-            const key = clearkeys[keyid];
-            return `${keyid}:${key}`;
-        } else if (typeof clearkeys === 'string') {
-            // إذا كانت clearkeys بتنسيق keyid:key، إرجاعها كما هي
-            return clearkeys;
-        }
-        return null;
-    }
-
-    // تشغيل القناة (يدعم الطريقتين)
     async function playChannel(url, key) {
-        if (!url) {
-            console.error("رابط القناة غير موجود!");
-            return;
-        }
-
-        let finalUrl = url;
-        let finalKey = key;
-
-        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
-        if (url.endsWith('.php')) {
-            const { manifestUri, clearkeys } = await fetchManifestAndKeys(url);
-            if (manifestUri) finalUrl = manifestUri;
-            if (clearkeys) finalKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
-        }
-
-        // تحويل التنسيق keyid:key إلى JSON
-        const drmConfig = finalKey ? {
-            clearkey: {
-                keyId: finalKey.split(':')[0],
-                key: finalKey.split(':')[1]
-            }
-        } : null;
-
-        // إعداد المشغل
-        const playerInstance = jwplayer("player").setup({
-            playlist: [{
-                sources: [{
-                    file: finalUrl,
-                    type: getStreamType(finalUrl),
-                    drm: drmConfig
-                }]
-            }],
-            width: "100%",
-            height: "100%",
-            autostart: true,
-            cast: {},
-            sharing: false
-        });
-
-        // إعداد الأحداث للمشغل
-        playerInstance.on('ready', () => {
-            console.log("المشغل جاهز للتشغيل!");
-        });
-
-        playerInstance.on('error', (error) => {
-            console.error("حدث خطأ في المشغل:", error);
-        });
-
-        playerInstance.on('setupError', (error) => {
-            console.error("حدث خطأ في إعداد المشغل:", error);
-        });
+    if (!url) {
+        console.error("رابط القناة غير موجود!");
+        return;
     }
+
+    let finalUrl = url;
+    let finalKey = key;
+
+    // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
+    if (url.endsWith('.php')) {
+        const { manifestUri, keyid, key } = await fetchManifestAndKeys(url);
+        if (manifestUri) finalUrl = manifestUri;
+        if (keyid && key) finalKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
+    }
+
+    // تحويل التنسيق keyid:key إلى JSON
+    const drmConfig = finalKey ? {
+        clearkey: {
+            keyId: finalKey.split(':')[0],
+            key: finalKey.split(':')[1]
+        }
+    } : null;
+
+    // إعداد المشغل
+    const playerInstance = jwplayer("player").setup({
+        playlist: [{
+            sources: [{
+                file: finalUrl,
+                type: getStreamType(finalUrl),
+                drm: drmConfig
+            }]
+        }],
+        width: "100%",
+        height: "100%",
+        autostart: true,
+        cast: {},
+        sharing: false
+    });
+
+    // إعداد الأحداث للمشغل
+    playerInstance.on('ready', () => {
+        console.log("المشغل جاهز للتشغيل!");
+    });
+
+    playerInstance.on('error', (error) => {
+        console.error("حدث خطأ في المشغل:", error);
+    });
+
+    playerInstance.on('setupError', (error) => {
+        console.error("حدث خطأ في إعداد المشغل:", error);
+    });
+}
 
     // تحديد نوع الملف تلقائيًا
     function getStreamType(url) {
