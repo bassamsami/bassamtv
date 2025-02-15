@@ -1,0 +1,714 @@
+/* التنسيق العام */
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background: #f0f0f0;
+    color: black;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+header {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #00bcd4;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo img {
+    height: 30px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icons a {
+    color: black;
+    font-size: 24px;
+    transition: transform 0.3s ease;
+}
+
+.social-icons a:hover {
+    transform: scale(1.2);
+}
+
+#theme-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 24px;
+    color: black;
+    transition: transform 0.3s ease;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+main {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 70px;
+}
+
+#main-page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#player-container {
+    width: 100%;
+    height: 80vh;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #00bcd4;
+    overflow: hidden;
+}
+
+#player-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    animation: fadeInOut 2s infinite;
+    position: absolute;
+    z-index: 1;
+}
+
+#player-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('backgroundplayer.png'); /* اضف رابط الصورة الخلفية هنا */
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+    z-index: 0;
+}
+
+#player {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.channels-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #00bcd4;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.channels-toggle i {
+    font-size: 20px;
+    color: white;
+}
+
+#channels-sidebar {
+    display: none;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    width: 300px;
+    height: calc(100% - 60px);
+    background: rgba(255, 255, 255, 0.9);
+    border-right: 2px solid #00bcd4;
+    z-index: 1001;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.sidebar-header span {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00bcd4;
+}
+
+#close-sidebar {
+    background: none;
+    border: 2px solid #00bcd4;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #00bcd4;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+#close-sidebar:hover {
+    transform: scale(1.1);
+    background: rgba(0, 188, 212, 0.1);
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+#search-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#clear-search {
+    background: #f44336;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+}
+
+#channels-list {
+    padding: 10px;
+}
+
+.group-section {
+    margin-bottom: 20px;
+    border-bottom: 2px solid #00bcd4;
+    padding-bottom: 15px;
+}
+
+.group-name {
+    color: #00bcd4;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
+    text-align: center;
+    border: 2px solid #00bcd4;
+}
+
+.channels-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.channel-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.channel-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.channel-card img {
+    width: 40px;
+    height: 40px;
+    border-radius: 30%;
+    object-fit: cover;
+}
+
+.channel-card p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.matches-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #00bcd4;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.matches-button i {
+    font-size: 20px;
+    color: white;
+}
+
+.dialog {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 1002;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dialog-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.close-dialog {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: 2px solid #00bcd4;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #00bcd4;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.close-dialog:hover {
+    transform: scale(1.1);
+    background: rgba(0, 188, 212, 0.1);
+}
+
+#matches-table {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.match-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: black;
+}
+
+.teams-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.team img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.team p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.vs-time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.vs {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00bcd4;
+}
+
+.match-status {
+    font-size: 16px;
+    font-weight: bold;
+    color: #00bcd4;
+}
+
+.match-status.soon {
+    color: #ff9800;
+    animation: blink 1s infinite;
+}
+
+.match-status.live {
+    color: #4CAF50;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.match-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+.match-details p {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 0;
+    font-size: 14px;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.match-details p:last-child {
+    border-bottom: none;
+}
+
+.match-details .icon {
+    font-size: 16px;
+}
+
+.watch-button {
+    background: #00bcd4;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    margin-top: 10px;
+}
+
+.watch-button.active {
+    background: #4CAF50;
+    border: 2px solid #45a049;
+    animation: pulse 1.5s infinite;
+}
+
+.watch-button.inactive {
+    background: #f44336;
+    border: 2px solid #d32f2f;
+    cursor: not-allowed;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.dark-theme {
+    background: #1a1a1a;
+    color: white;
+}
+
+.dark-theme header, .dark-theme footer {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+}
+
+.dark-theme #channels-sidebar {
+    background: rgba(30, 30, 30, 0.95);
+    border-right: 2px solid #00bcd4;
+}
+
+.dark-theme .sidebar-header span {
+    color: #00bcd4;
+}
+
+.dark-theme #close-sidebar {
+    color: #00bcd4;
+}
+
+.dark-theme .group-name {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00bcd4;
+    color: #00bcd4;
+}
+
+.dark-theme .channel-card {
+    background: rgba(50, 50, 50, 0.8);
+    border: 1px solid #00bcd4;
+}
+
+.dark-theme .channel-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
+}
+
+.dark-theme .dialog {
+    background: rgba(30, 30, 30, 0.95);
+    border: 2px solid #00bcd4;
+}
+
+.dark-theme .close-dialog {
+    color: #00bcd4;
+}
+
+.dark-theme .match-item {
+    background: rgba(50, 50, 50, 0.8);
+    border: 1px solid #00bcd4;
+    color: white;
+}
+
+.dark-theme .match-details {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .watch-button.active {
+    background: #00bcd4;
+    border: 2px solid #0097a7;
+}
+
+.dark-theme .watch-button.inactive {
+    background: #f44336;
+    border: 2px solid #d32f2f;
+}
+.dark-theme #theme-toggle i {
+    color: #00bcd4; /* لون سماوي مريح */
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.dark-theme #theme-toggle:hover i {
+    color: #0097a7; /* لون سماوي داكن عند التحويم */
+    transform: scale(1.2); /* تكبير الأيقونة عند التحويم */
+}
+.dark-theme .social-icons a {
+    color: #00bcd4; /* لون سماوي مريح */
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.dark-theme .social-icons a:hover {
+    color: #0097a7; /* لون سماوي داكن عند التحويم */
+    transform: scale(1.2); /* تكبير الأيقونة عند التحويم */
+}
+
+/* التنسيق العام للهواتف المحمولة */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+        font-size: 14px; /* تصغير حجم الخط للهواتف */
+    }
+
+    /* الهيدر */
+    header {
+        padding: 5px 10px; /* تقليل الحشو */
+    }
+
+    .logo img {
+        height: 40px; /* تصغير حجم اللوجو */
+    }
+
+    .social-icons a {
+        font-size: 20px; /* تصغير حجم أيقونات السوشيال ميديا */
+    }
+
+    #theme-toggle {
+        padding: 8px; /* تصغير حجم زر تبديل الثيم */
+        font-size: 20px;
+    }
+
+    /* المشغل */
+    #player-container {
+        height: 80vh; /* تقليل ارتفاع المشغل */
+        border-radius: 5px; /* تقليل زوايا التدوير */
+    }
+
+    #player-placeholder {
+        font-size: 18px; /* تصغير حجم النص في المشغل */
+    }
+
+    /* القائمة الجانبية */
+    #channels-sidebar {
+        width: 100%; /* جعل القائمة تأخذ العرض بالكامل */
+        height: calc(100% - 60px); /* تعديل الارتفاع */
+        top: 60px; /* تعديل المسافة من الأعلى */
+    }
+
+    .sidebar-header span {
+        font-size: 16px; /* تصغير حجم نص القائمة الجانبية */
+    }
+
+    #close-sidebar {
+        padding: 5px; /* تصغير حجم زر الإغلاق */
+        font-size: 18px;
+    }
+
+    .search-box {
+        padding: 5px; /* تقليل الحشو في صندوق البحث */
+    }
+
+    #search-input {
+        font-size: 14px; /* تصغير حجم نص البحث */
+    }
+
+    .channel-card {
+        padding: 8px; /* تقليل الحشو في بطاقات القنوات */
+    }
+
+    .channel-card img {
+        width: 30px; /* تصغير حجم صور القنوات */
+        height: 30px;
+    }
+
+    .channel-card p {
+        font-size: 12px; /* تصغير حجم نص القنوات */
+    }
+
+    /* زر عرض القنوات */
+    .channels-toggle {
+        bottom: 10px; /* تعديل المسافة من الأسفل */
+        left: 10px;
+        padding: 12px; /* تصغير حجم الزر */
+    }
+
+    .channels-toggle i {
+        font-size: 18px; /* تصغير حجم الأيقونة */
+    }
+
+    /* زر عرض المباريات */
+    .matches-button {
+        bottom: 10px; /* تعديل المسافة من الأسفل */
+        right: 10px;
+        padding: 12px; /* تصغير حجم الزر */
+    }
+
+    .matches-button i {
+        font-size: 18px; /* تصغير حجم الأيقونة */
+    }
+
+    /* ديالوج المباريات */
+    .dialog {
+        width: 95%; /* جعل الديالوج يأخذ عرضًا أكبر */
+        max-width: 95%; /* إزالة الحد الأقصى للعرض */
+        padding: 10px; /* تقليل الحشو */
+    }
+
+    .dialog-content h2 {
+        font-size: 18px; /* تصغير حجم عنوان الديالوج */
+    }
+
+    .match-item {
+        padding: 10px; /* تقليل الحشو في عناصر المباريات */
+    }
+
+    .team img {
+        width: 30px; /* تصغير حجم صور الفرق */
+        height: 30px;
+    }
+
+    .team p {
+        font-size: 14px; /* تصغير حجم أسماء الفرق */
+    }
+
+    .vs {
+        font-size: 16px; /* تصغير حجم نص "VS" */
+    }
+
+    .match-status {
+        font-size: 14px; /* تصغير حجم حالة المباراة */
+    }
+
+    .watch-button {
+        padding: 8px 16px; /* تصغير حجم زر المشاهدة */
+        font-size: 12px;
+    }
+
+    /* أخبار التمرير */
+    .news-ticker {
+        font-size: 12px; /* تصغير حجم نص الأخبار */
+    }
+
+    /* الثيم الدارك */
+    .dark-theme #player-container {
+        border-color: #00bcd4; /* تعديل لون الحدود في الثيم الدارك */
+    }
+
+    .dark-theme .channel-card {
+        background: rgba(50, 50, 50, 0.9); /* تحسين خلفية بطاقات القنوات */
+    }
+
+    .dark-theme .dialog {
+        background: rgba(30, 30, 30, 0.95); /* تحسين خلفية الديالوج */
+    }
+}

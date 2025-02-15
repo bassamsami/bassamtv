@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoviBall Admin - Bassam Samir</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <main>
+        <!-- أزرار التحكم -->
+        <div class="control-buttons">
+            <button onclick="showPage('add-group')">إضافة مجموعة</button>
+            <button onclick="showPage('add-channel')">إضافة قناة</button>
+            <button onclick="showPage('view-groups')">عرض المجموعات</button>
+            <button onclick="showPage('add-match')">إضافة مباراة</button>
+            <button onclick="showPage('view-matches')">عرض المباريات</button>
+        </div>
+
+        <!-- صفحة إضافة المجموعات -->
+        <section id="add-group" class="page">
+            <h2>إضافة مجموعة</h2>
+            <input type="text" id="group-name" placeholder="اسم المجموعة">
+            <button id="add-group-btn">إضافة</button>
+            <button class="back-button" onclick="showPage('view-groups')">رجوع</button>
+        </section>
+
+        <!-- صفحة إضافة القنوات -->
+        <section id="add-channel" class="page" style="display: none;">
+            <h2>إضافة/تعديل قناة</h2>
+            <input type="text" id="channel-name" placeholder="اسم القناة">
+            <input type="text" id="channel-url" placeholder="رابط القناة">
+            <input type="text" id="channel-image" placeholder="رابط صورة القناة">
+            <input type="text" id="channel-key" placeholder="Key ID:Key (اختياري)">
+            <select id="channel-group">
+                <!-- المجموعات سيتم إضافتها هنا عبر JavaScript -->
+            </select>
+            <button id="add-channel-btn">إضافة قناة</button>
+            <button id="edit-channel-btn" style="display: none;">تعديل القناة</button>
+            <button class="back-button" onclick="showPage('view-groups')">رجوع</button>
+        </section>
+
+        <!-- صفحة عرض المجموعات -->
+        <section id="view-groups" class="page">
+            <h2>عرض المجموعات</h2>
+            <div id="groups-list">
+                <!-- المجموعات سيتم عرضها هنا -->
+            </div>
+            <button class="back-button" onclick="showPage('control-buttons')">رجوع</button>
+        </section>
+
+        <!-- صفحة عرض القنوات -->
+        <section id="view-channels" class="page" style="display: none;">
+            <h2>عرض القنوات</h2>
+            <div class="channels-grid" id="channels-grid">
+                <!-- القنوات سيتم عرضها هنا -->
+            </div>
+            <button class="back-button" onclick="showPage('view-groups')">رجوع</button>
+        </section>
+
+        <!-- صفحة إضافة المباراة -->
+        <!-- صفحة إضافة المباراة -->
+<section id="add-match" class="page" style="display: none;">
+    <h2>إضافة مباراة</h2>
+    <input type="text" id="team1" placeholder="اسم الفريق الأول">
+    <input type="text" id="team1-image" placeholder="رابط صورة الفريق الأول">
+    <input type="text" id="team2" placeholder="اسم الفريق الثاني">
+    <input type="text" id="team2-image" placeholder="رابط صورة الفريق الثاني">
+    <input type="datetime-local" id="match-time" placeholder="موعد المباراة">
+    <input type="text" id="match-league" placeholder="الدوري">
+    <input type="text" id="commentator" placeholder="اسم المعلق">
+    <input type="text" id="match-channel-url" placeholder="رابط القناة (مطلوب)">
+    <input type="text" id="match-channel-key" placeholder="Key ID:Key (اختياري)">
+    <button id="add-match-btn">إضافة مباراة</button>
+    <button class="back-button" onclick="showPage('view-matches')">رجوع</button>
+</section>
+
+        <!-- صفحة عرض المباريات -->
+        <section id="view-matches" class="page" style="display: none;">
+            <h2>عرض المباريات</h2>
+            <div class="matches-grid" id="matches-grid">
+                <!-- المباريات سيتم عرضها هنا -->
+            </div>
+            <button class="back-button" onclick="showPage('control-buttons')">رجوع</button>
+        </section>
+
+        <!-- صفحة تعديل المباراة -->
+        <section id="edit-match" class="page" style="display: none;">
+            <h2>تعديل مباراة</h2>
+            <input type="text" id="edit-team1" placeholder="اسم الفريق الأول">
+            <input type="text" id="edit-team1-image" placeholder="رابط صورة الفريق الأول">
+            <input type="text" id="edit-team2" placeholder="اسم الفريق الثاني">
+            <input type="text" id="edit-team2-image" placeholder="رابط صورة الفريق الثاني">
+            <input type="datetime-local" id="edit-match-time" placeholder="موعد المباراة">
+            <input type="text" id="edit-match-league" placeholder="الدوري">
+            <input type="text" id="edit-commentator" placeholder="اسم المعلق">
+            <input type="text" id="edit-channel-url" placeholder="رابط القناة (اختياري)">
+            <input type="text" id="edit-channel-key" placeholder="Key ID:Key (اختياري)">
+            <button id="save-match-btn">حفظ التعديلات</button>
+            <button class="back-button" onclick="showPage('view-matches')">رجوع</button>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="firebase.js"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>
