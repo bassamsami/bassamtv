@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const themeToggle = document.getElementById("theme-toggle");
     const channelsList = document.getElementById("channels-list");
     const searchInput = document.getElementById("search-input");
@@ -68,25 +68,73 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // تشغيل القناة
-    function playChannel(url, key) {
+    // دالة لجلب manifestUri و clearkeys من ملف PHP
+    async function fetchManifestAndKeys(phpUrl) {
+        try {
+            const response = await fetch(phpUrl);
+            const text = await response.text();
+
+            // استخراج رابط الـ manifestUri
+            const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
+            const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
+
+            // استخراج مفاتيح clearkeys
+            const clearkeysMatch = text.match(/clearKeys\s*:\s*({[^}]+})/);
+            const clearkeys = clearkeysMatch ? JSON.parse(clearkeysMatch[1].replace(/'/g, '"')) : null;
+
+            return { manifestUri, clearkeys };
+        } catch (error) {
+            console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
+            return { manifestUri: null, clearkeys: null };
+        }
+    }
+
+    // دالة لتحويل clearkeys إلى التنسيق المطلوب
+    function formatClearkeys(clearkeys) {
+        if (typeof clearkeys === 'object') {
+            // إذا كانت clearkeys بتنسيق JSON، تحويلها إلى التنسيق المطلوب
+            const keyid = Object.keys(clearkeys)[0];
+            const key = clearkeys[keyid];
+            return `${keyid}:${key}`;
+        } else if (typeof clearkeys === 'string') {
+            // إذا كانت clearkeys بتنسيق keyid:key، إرجاعها كما هي
+            return clearkeys;
+        }
+        return null;
+    }
+
+    // تشغيل القناة (يدعم الطريقتين)
+    async function playChannel(url, key) {
         if (!url) {
             console.error("رابط القناة غير موجود!");
             return;
         }
 
-        const config = {
+        let finalUrl = url;
+        let finalKey = key;
+
+        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
+        if (url.endsWith('.php')) {
+            const { manifestUri, clearkeys } = await fetchManifestAndKeys(url);
+            if (manifestUri) finalUrl = manifestUri;
+            if (clearkeys) finalKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
+        }
+
+        // تحويل التنسيق keyid:key إلى JSON
+        const drmConfig = finalKey ? {
+            clearkey: {
+                keyId: finalKey.split(':')[0],
+                key: finalKey.split(':')[1]
+            }
+        } : null;
+
+        // إعداد المشغل
+        const playerInstance = jwplayer("player").setup({
             playlist: [{
                 sources: [{
-                    file: url,
-                    type: getStreamType(url),
-                    drm: key ? {
-                        clearkey: {
-                            keyId: key.split(":")[0],
-                            key: key.split(":")[1],
-                            robustnessLevel: "SW_SECURE_CRYPTO"
-                        }
-                    } : null
+                    file: finalUrl,
+                    type: getStreamType(finalUrl),
+                    drm: drmConfig
                 }]
             }],
             width: "100%",
@@ -94,22 +142,19 @@ document.addEventListener("DOMContentLoaded", function() {
             autostart: true,
             cast: {},
             sharing: false
-        };
+        });
 
-        const playerInstance = jwplayer("player").setup(config);
+        // إعداد الأحداث للمشغل
+        playerInstance.on('ready', () => {
+            console.log("المشغل جاهز للتشغيل!");
+        });
 
-        playerInstance.on('fullscreen', function(event) {
-            if (event.fullscreen) {
-                const playerElement = document.getElementById("player");
-                playerElement.style.objectFit = "cover";
-                playerElement.style.width = "100vw";
-                playerElement.style.height = "100vh";
-            } else {
-                const playerElement = document.getElementById("player");
-                playerElement.style.objectFit = "contain";
-                playerElement.style.width = "100%";
-                playerElement.style.height = "100%";
-            }
+        playerInstance.on('error', (error) => {
+            console.error("حدث خطأ في المشغل:", error);
+        });
+
+        playerInstance.on('setupError', (error) => {
+            console.error("حدث خطأ في إعداد المشغل:", error);
         });
     }
 
@@ -121,6 +166,10 @@ document.addEventListener("DOMContentLoaded", function() {
             return "dash";
         } else if (url.includes(".mp4") || url.includes(".m4v")) {
             return "mp4";
+        } else if (url.includes(".ts") || url.includes(".mpegts")) {
+            return "mpegts";
+        } else if (url.includes(".php") || url.includes(".embed")) {
+            return "html5";
         } else {
             return "auto";
         }
@@ -165,12 +214,6 @@ document.addEventListener("DOMContentLoaded", function() {
     closeSidebar.addEventListener("click", () => {
         channelsSidebar.style.display = "none";
     });
-	
-	document.addEventListener("click", (event) => {
-    if (!matchesDialog.contains(event.target) && !matchesButton.contains(event.target)) {
-        matchesDialog.style.display = "none";
-    }
-});
 
     // عرض ديالوج المباريات
     matchesButton.addEventListener("click", () => {

@@ -20,7 +20,8 @@
     <title>MoviBall Connect</title>
     <link rel="stylesheet" href="user-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+	<script src="https://ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
     <script>
         jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
     </script>
@@ -73,7 +74,9 @@
                 <i class="fas fa-table"></i>
             </button>
         </div>
-
+ <div id="online-users-icon" style="position: fixed; top: 50px; right: 60px; background: #28a745; color: white; padding: 10px; border-radius: 25px; font-weight: bold; font-family: Arial, sans-serif;">
+    👥 <span id="online-users-count">0</span>
+  </div>
         <!-- ديالوج المباريات -->
         <div id="matches-dialog" class="dialog">
             <div class="dialog-content">
@@ -99,5 +102,27 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script src="firebase.js"></script>
     <script src="user-script.js"></script>
+	<script type="module">
+    import { getDatabase, ref, onValue, set, remove, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js";
+    import { app } from 'firebase.js';
+
+    const db = getDatabase(app);
+    const userId = `user_${Math.random().toString(36).substring(2)}`;
+    const userRef = ref(db, `activeUsers/${userId}`);
+
+    // تسجيل المستخدم عند الدخول
+    set(userRef, { online: true, timestamp: serverTimestamp() });
+
+    // إزالة المستخدم عند الخروج أو إغلاق الصفحة
+    onDisconnect(userRef).remove();
+    window.addEventListener('beforeunload', () => remove(userRef));
+
+    // تحديث عدد المستخدمين المباشر
+    const activeUsersRef = ref(db, 'activeUsers');
+    onValue(activeUsersRef, (snapshot) => {
+      const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+      document.getElementById('online-users-count').innerText = count;
+    });
+  </script>
 </body>
 </html>

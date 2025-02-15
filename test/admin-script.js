@@ -9,6 +9,41 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMatches();
 });
 
+// دالة لجلب manifestUri و clearkeys من ملف PHP
+async function fetchManifestAndKeys(phpUrl) {
+    try {
+        const response = await fetch(phpUrl);
+        const text = await response.text();
+
+        // استخراج رابط الـ manifestUri
+        const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
+        const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
+
+        // استخراج مفاتيح clearkeys
+        const clearkeysMatch = text.match(/clearKeys\s*:\s*({[^}]+})/);
+        const clearkeys = clearkeysMatch ? JSON.parse(clearkeysMatch[1].replace(/'/g, '"')) : null;
+
+        return { manifestUri, clearkeys };
+    } catch (error) {
+        console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
+        return { manifestUri: null, clearkeys: null };
+    }
+}
+
+// دالة لتحويل clearkeys إلى التنسيق المطلوب
+function formatClearkeys(clearkeys) {
+    if (typeof clearkeys === 'object') {
+        // إذا كانت clearkeys بتنسيق JSON، تحويلها إلى التنسيق المطلوب
+        const keyid = Object.keys(clearkeys)[0];
+        const key = clearkeys[keyid];
+        return `${keyid}:${key}`;
+    } else if (typeof clearkeys === 'string') {
+        // إذا كانت clearkeys بتنسيق keyid:key، إرجاعها كما هي
+        return clearkeys;
+    }
+    return null;
+}
+
 function showPage(pageId) {
     document.querySelectorAll(".page").forEach((page) => {
         page.style.display = "none";
@@ -156,19 +191,29 @@ function deleteGroup(groupId) {
     }
 }
 
-document.getElementById("add-channel-btn").addEventListener("click", () => {
+document.getElementById("add-channel-btn").addEventListener("click", async () => {
     const channelName = document.getElementById("channel-name").value;
     const channelUrl = document.getElementById("channel-url").value;
     const channelImage = document.getElementById("channel-image").value;
-    const channelKey = document.getElementById("channel-key").value; // Key ID:Key
+    const channelKey = document.getElementById("channel-key").value;
     const channelGroup = document.getElementById("channel-group").value;
 
     if (channelName && channelUrl && channelImage && channelGroup) {
+        let finalChannelUrl = channelUrl;
+        let finalChannelKey = channelKey;
+
+        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
+        if (channelUrl.endsWith('.php')) {
+            const { manifestUri, clearkeys } = await fetchManifestAndKeys(channelUrl);
+            if (manifestUri) finalChannelUrl = manifestUri;
+            if (clearkeys) finalChannelKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
+        }
+
         db.collection("channels").add({
             name: channelName,
-            url: channelUrl,
+            url: finalChannelUrl,
             image: channelImage,
-            key: channelKey || "", // Key ID:Key (اختياري)
+            key: finalChannelKey || "",
             group: channelGroup,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
@@ -181,6 +226,7 @@ document.getElementById("add-channel-btn").addEventListener("click", () => {
     }
 });
 
+
 function editChannel(channelId) {
     currentChannelId = channelId;
     db.collection("channels").doc(channelId).get().then((doc) => {
@@ -188,7 +234,7 @@ function editChannel(channelId) {
         document.getElementById("channel-name").value = channel.name;
         document.getElementById("channel-url").value = channel.url;
         document.getElementById("channel-image").value = channel.image;
-        document.getElementById("channel-key").value = channel.key || ""; // Key ID:Key
+        document.getElementById("channel-key").value = channel.key || "";
         document.getElementById("channel-group").value = channel.group;
 
         document.getElementById("add-channel-btn").style.display = "none";
@@ -202,7 +248,7 @@ document.getElementById("edit-channel-btn").addEventListener("click", () => {
     const name = document.getElementById("channel-name").value;
     const url = document.getElementById("channel-url").value;
     const image = document.getElementById("channel-image").value;
-    const key = document.getElementById("channel-key").value; // Key ID:Key
+    const key = document.getElementById("channel-key").value;
     const group = document.getElementById("channel-group").value;
 
     if (name && url && image && group) {
@@ -210,7 +256,7 @@ document.getElementById("edit-channel-btn").addEventListener("click", () => {
             name: name,
             url: url,
             image: image,
-            key: key || "", // Key ID:Key (اختياري)
+            key: key || "",
             group: group
         }).then(() => {
             alert("تم تعديل القناة بنجاح");
@@ -233,7 +279,7 @@ function deleteChannel(channelId) {
     }
 }
 
-document.getElementById("add-match-btn").addEventListener("click", () => {
+document.getElementById("add-match-btn").addEventListener("click", async () => {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
     const team1Image = document.getElementById("team1-image").value;
@@ -241,43 +287,44 @@ document.getElementById("add-match-btn").addEventListener("click", () => {
     const matchTime = document.getElementById("match-time").value;
     const matchLeague = document.getElementById("match-league").value;
     const commentator = document.getElementById("commentator").value;
-    const channelUrl = document.getElementById("match-channel-url").value; // رابط القناة (مطلوب)
-    const channelKey = document.getElementById("match-channel-key").value; // Key ID:Key (اختياري)
+    const channelUrl = document.getElementById("match-channel-url").value;
+    const channelKey = document.getElementById("match-channel-key").value;
 
-    // التأكد من أن جميع الحقول المطلوبة مملوءة
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
-        const matchTimeUTC = new Date(matchTime).toISOString(); // تحويل الوقت إلى تنسيق UTC
-       console.log("رابط صورة الفريق الأول:", team1Image); // للتأكد من أن القيمة صحيحة
-        console.log("رابط صورة الفريق الثاني:", team2Image); // للتأكد من أن القيمة صحيحة
-       console.log("رابط القناة المرسل:", channelUrl); // للتأكد من أن القيمة صحيحة
+        const matchTimeUTC = new Date(matchTime).toISOString();
 
-db.collection("matches").add({
-    team1: team1,
-    team2: team2,
-    team1Image: team1Image,
-    team2Image: team2Image,
-    matchTime: matchTimeUTC,
-    matchLeague: matchLeague,
-    commentator: commentator,
-    channelUrl: channelUrl, // رابط القناة (مطلوب)
-    key: channelKey || "", // Key ID:Key (اختياري)
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-}).then(() => {
-    alert("تمت إضافة المباراة بنجاح");
-    loadMatches(); // إعادة تحميل المباريات بعد الإضافة
-}).catch((error) => {
-    console.error("حدث خطأ أثناء إضافة المباراة:", error);
-    alert("حدث خطأ: " + error.message);
-});
+        let finalChannelUrl = channelUrl;
+        let finalChannelKey = channelKey;
+
+        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
+        if (channelUrl.endsWith('.php')) {
+            const { manifestUri, clearkeys } = await fetchManifestAndKeys(channelUrl);
+            if (manifestUri) finalChannelUrl = manifestUri;
+            if (clearkeys) finalChannelKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
+        }
+
+        db.collection("matches").add({
+            team1: team1,
+            team2: team2,
+            team1Image: team1Image,
+            team2Image: team2Image,
+            matchTime: matchTimeUTC,
+            matchLeague: matchLeague,
+            commentator: commentator,
+            channelUrl: finalChannelUrl,
+            key: finalChannelKey || "",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("تمت إضافة المباراة بنجاح");
+            loadMatches();
+        }).catch((error) => {
+            console.error("حدث خطأ أثناء إضافة المباراة:", error);
+            alert("حدث خطأ: " + error.message);
+        });
     } else {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
-    if (!channelUrl) {
-    alert("يرجى إدخال رابط القناة");
-    return; // إيقاف الإضافة إذا كان الرابط فارغًا
-}
 });
-
 function loadMatches() {
     const matchesGrid = document.getElementById("matches-grid");
     if (matchesGrid) {
@@ -288,22 +335,22 @@ function loadMatches() {
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
-    const match = doc.data();
-    console.log("رابط القناة المستلم:", match.channelUrl); // للتأكد من أن القيمة صحيحة
+                    const match = doc.data();
+                    console.log("رابط القناة المستلم:", match.channelUrl);
 
-    const matchCard = document.createElement("div");
-    matchCard.classList.add("match-card");
-    matchCard.innerHTML = `
-        <p>${match.team1} vs ${match.team2}</p>
-        <p>الوقت: ${new Date(match.matchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-        <p>الدوري: ${match.matchLeague}</p>
-        <p>المعلق: ${match.commentator}</p>
-        <p>القناة: ${match.channelUrl}</p>
-        <button onclick="editMatch('${doc.id}')">تعديل</button>
-        <button onclick="deleteMatch('${doc.id}')">حذف</button>
-    `;
-    matchesGrid.appendChild(matchCard);
-});
+                    const matchCard = document.createElement("div");
+                    matchCard.classList.add("match-card");
+                    matchCard.innerHTML = `
+                        <p>${match.team1} vs ${match.team2}</p>
+                        <p>الوقت: ${new Date(match.matchTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p>الدوري: ${match.matchLeague}</p>
+                        <p>المعلق: ${match.commentator}</p>
+                        <p>القناة: ${match.channelUrl}</p>
+                        <button onclick="editMatch('${doc.id}')">تعديل</button>
+                        <button onclick="deleteMatch('${doc.id}')">حذف</button>
+                    `;
+                    matchesGrid.appendChild(matchCard);
+                });
             }).catch((error) => {
                 console.error("حدث خطأ أثناء تحميل المباريات:", error);
                 alert("حدث خطأ: " + error.message);
@@ -323,8 +370,8 @@ function editMatch(matchId) {
             document.getElementById("edit-match-time").value = new Date(match.matchTime).toISOString().slice(0, 16);
             document.getElementById("edit-match-league").value = match.matchLeague;
             document.getElementById("edit-commentator").value = match.commentator;
-            document.getElementById("edit-channel-url").value = match.channelUrl || ""; // رابط القناة (مطلوب)
-            document.getElementById("edit-channel-key").value = match.key || ""; // Key ID:Key (اختياري)
+            document.getElementById("edit-channel-url").value = match.channelUrl || "";
+            document.getElementById("edit-channel-key").value = match.key || "";
 
             showPage("edit-match");
         } else {
@@ -344,11 +391,11 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
     const matchTime = document.getElementById("edit-match-time").value;
     const matchLeague = document.getElementById("edit-match-league").value;
     const commentator = document.getElementById("edit-commentator").value;
-    const channelUrl = document.getElementById("edit-channel-url").value; // رابط القناة (مطلوب)
-    const channelKey = document.getElementById("edit-channel-key").value; // Key ID:Key (اختياري)
+    const channelUrl = document.getElementById("edit-channel-url").value;
+    const channelKey = document.getElementById("edit-channel-key").value;
 
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
-        const matchTimeUTC = new Date(matchTime).toISOString(); // تحويل الوقت إلى تنسيق UTC
+        const matchTimeUTC = new Date(matchTime).toISOString();
 
         db.collection("matches").doc(currentMatchId).update({
             team1: team1,
@@ -358,12 +405,12 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelUrl: channelUrl, // رابط القناة (مطلوب)
-            key: channelKey || "", // Key ID:Key (اختياري)
+            channelUrl: channelUrl,
+            key: channelKey || "",
         }).then(() => {
             alert("تم تعديل المباراة بنجاح");
-            loadMatches(); // إعادة تحميل المباريات بعد التعديل
-            showPage("view-matches"); // العودة إلى صفحة عرض المباريات
+            loadMatches();
+            showPage("view-matches");
         }).catch((error) => {
             console.error("حدث خطأ أثناء تعديل المباراة:", error);
             alert("حدث خطأ: " + error.message);
@@ -372,12 +419,13 @@ document.getElementById("save-match-btn").addEventListener("click", () => {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
 });
+
 function deleteMatch(matchId) {
     if (confirm("هل أنت متأكد من حذف هذه المباراة؟")) {
         db.collection("matches").doc(matchId).delete()
             .then(() => {
                 alert("تم حذف المباراة بنجاح");
-                loadMatches(); // إعادة تحميل المباريات بعد الحذف
+                loadMatches();
             }).catch((error) => {
                 console.error("حدث خطأ أثناء حذف المباراة:", error);
                 alert("حدث خطأ: " + error.message);

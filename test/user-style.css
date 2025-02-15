@@ -564,21 +564,15 @@ main {
 }
 
 /* التنسيق العام للهواتف المحمولة */
-/* التنسيق العام للهواتف المحمولة */
 @media (max-width: 768px) {
     body {
-        overflow-x: hidden; /* إخفاء شريط التمرير الأفقي */
+        overflow-x: hidden;
         font-size: 14px; /* تصغير حجم الخط للهواتف */
     }
 
     /* الهيدر */
     header {
         padding: 5px 10px; /* تقليل الحشو */
-        position: fixed; /* تثبيت الهيدر في الأعلى */
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
     }
 
     .logo img {
@@ -596,10 +590,8 @@ main {
 
     /* المشغل */
     #player-container {
-        height: calc(120vw * 9 / 16); /* نسبة 16:9 للمشغل (نفس النسبة كما في الكمبيوتر) */
-        width: 100%; /* العرض يتغير حسب الشاشة */
+        height: 80vh; /* تقليل ارتفاع المشغل */
         border-radius: 5px; /* تقليل زوايا التدوير */
-        margin-top: 60px; /* إضافة مسافة من الأعلى لتجنب التداخل مع الهيدر */
     }
 
     #player-placeholder {
@@ -645,11 +637,9 @@ main {
 
     /* زر عرض القنوات */
     .channels-toggle {
-        position: fixed;
-        bottom: 20px; /* تعديل المسافة من الأسفل */
-        left: 20px;
+        bottom: 10px; /* تعديل المسافة من الأسفل */
+        left: 10px;
         padding: 12px; /* تصغير حجم الزر */
-        z-index: 1000; /* التأكد من ظهور الزر فوق العناصر الأخرى */
     }
 
     .channels-toggle i {
@@ -658,11 +648,9 @@ main {
 
     /* زر عرض المباريات */
     .matches-button {
-        position: fixed;
-        bottom: 20px; /* تعديل المسافة من الأسفل */
-        right: 20px;
+        bottom: 10px; /* تعديل المسافة من الأسفل */
+        right: 10px;
         padding: 12px; /* تصغير حجم الزر */
-        z-index: 1000; /* التأكد من ظهور الزر فوق العناصر الأخرى */
     }
 
     .matches-button i {
@@ -674,9 +662,6 @@ main {
         width: 95%; /* جعل الديالوج يأخذ عرضًا أكبر */
         max-width: 95%; /* إزالة الحد الأقصى للعرض */
         padding: 10px; /* تقليل الحشو */
-        top: 50%; /* توسيط الديالوج */
-        left: 50%;
-        transform: translate(-50%, -50%);
     }
 
     .dialog-content h2 {
