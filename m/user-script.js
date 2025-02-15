@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // دالة لجلب manifestUri و clearkeys من ملف PHP
-   async function fetchManifestAndKeys(phpUrl) {
+  async function fetchManifestAndKeys(phpUrl) {
     try {
         const response = await fetch(phpUrl);
         const text = await response.text();
@@ -82,6 +82,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const clearkeysMatch = text.match(/clearKeys\s*:\s*{\s*'([^']+)'\s*:\s*'([^']+)'/);
         const keyid = clearkeysMatch ? clearkeysMatch[1] : null;
         const key = clearkeysMatch ? clearkeysMatch[2] : null;
+
+        if (!manifestUri) {
+            console.error("لم يتم العثور على رابط البث في ملف PHP.");
+        }
+        if (!keyid || !key) {
+            console.error("لم يتم العثور على مفاتيح التشفير في ملف PHP.");
+        }
 
         return { manifestUri, keyid, key };
     } catch (error) {
@@ -115,6 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("تم سحب المفاتيح:", finalKey);
         } else {
             console.error("لم يتم العثور على مفاتيح التشفير في ملف PHP.");
+            return; // إيقاف التشغيل إذا لم يتم العثور على المفاتيح
         }
     }
 
