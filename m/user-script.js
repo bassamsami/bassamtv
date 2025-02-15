@@ -74,31 +74,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const response = await fetch(phpUrl);
         const text = await response.text();
 
-        // استخراج رابط الـ manifestUri
+        // استخراج رابط الـ manifestUri فقط
         const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
         const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
-
-        // استخراج keyid و key مباشرةً
-        const clearkeysMatch = text.match(/clearKeys\s*:\s*{\s*'([^']+)'\s*:\s*'([^']+)'/);
-        const keyid = clearkeysMatch ? clearkeysMatch[1] : null;
-        const key = clearkeysMatch ? clearkeysMatch[2] : null;
 
         if (!manifestUri) {
             console.error("لم يتم العثور على رابط البث في ملف PHP.");
         }
-        if (!keyid || !key) {
-            console.error("لم يتم العثور على مفاتيح التشفير في ملف PHP.");
-        }
 
-        return { manifestUri, keyid, key };
+        return { manifestUri };
     } catch (error) {
         console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
-        return { manifestUri: null, keyid: null, key: null };
+        return { manifestUri: null };
     }
 }
 
     // دالة لتحويل clearkeys إلى التنسيق المطلوب
-    async function playChannel(url, key) {
+   async function playChannel(url, key) {
     if (!url) {
         console.error("رابط القناة غير موجود!");
         return;
@@ -109,21 +101,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
     if (url.endsWith('.php')) {
-        const { manifestUri, keyid, key } = await fetchManifestAndKeys(url);
+        const { manifestUri } = await fetchManifestAndKeys(url);
         if (manifestUri) {
             finalUrl = manifestUri; // استخدام الرابط المسحوب
             console.log("تم سحب الرابط النهائي:", finalUrl);
+
+            // استخدام المفاتيح الثابتة عند سحبها من ملف الـ .php
+            const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
+            const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
+            finalKey = `${staticKeyid}:${staticKey}`; // استخدام المفاتيح الثابتة
+            console.log("تم استخدام المفاتيح الثابتة:", finalKey);
         } else {
             console.error("لم يتم العثور على رابط البث في ملف PHP.");
             return;
         }
-        if (keyid && key) {
-            finalKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
-            console.log("تم سحب المفاتيح:", finalKey);
-        } else {
-            console.error("لم يتم العثور على مفاتيح التشفير في ملف PHP.");
-            return; // إيقاف التشغيل إذا لم يتم العثور على المفاتيح
-        }
+    }
+
+    // إذا تمت إضافة مفتاح جديد يدويًا (بالطريقة التقليدية)، استخدامه بدلاً من المفاتيح الثابتة
+    if (key) {
+        finalKey = key; // استخدام المفتاح الجديد
+        console.log("تم استخدام المفتاح الجديد:", finalKey);
     }
 
     // تحويل التنسيق keyid:key إلى إعدادات DRM
