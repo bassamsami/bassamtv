@@ -103,15 +103,26 @@ document.addEventListener("DOMContentLoaded", function () {
     // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
     if (url.endsWith('.php')) {
         const { manifestUri, keyid, key } = await fetchManifestAndKeys(url);
-        if (manifestUri) finalUrl = manifestUri; // استخدام الرابط المسحوب
-        if (keyid && key) finalKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
+        if (manifestUri) {
+            finalUrl = manifestUri; // استخدام الرابط المسحوب
+            console.log("تم سحب الرابط النهائي:", finalUrl);
+        } else {
+            console.error("لم يتم العثور على رابط البث في ملف PHP.");
+            return;
+        }
+        if (keyid && key) {
+            finalKey = `${keyid}:${key}`; // استخدام keyid:key مباشرةً
+            console.log("تم سحب المفاتيح:", finalKey);
+        } else {
+            console.error("لم يتم العثور على مفاتيح التشفير في ملف PHP.");
+        }
     }
 
-    // تحويل التنسيق keyid:key إلى JSON
+    // تحويل التنسيق keyid:key إلى إعدادات DRM
     const drmConfig = finalKey ? {
         clearkey: {
-            keyId: finalKey.split(':')[0],
-            key: finalKey.split(':')[1]
+            keyId: finalKey.split(':')[0], // الجزء الأول هو keyid
+            key: finalKey.split(':')[1]   // الجزء الثاني هو key
         },
         robustness: 'SW_SECURE_CRYPTO' // إضافة robustness
     } : null;
@@ -139,13 +150,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     playerInstance.on('error', (error) => {
         console.error("حدث خطأ في المشغل:", error);
+        if (error.code === 246012) {
+            console.error("السبب المحتمل: الرابط أو المفاتيح غير صحيحة.");
+        }
     });
 
     playerInstance.on('setupError', (error) => {
         console.error("حدث خطأ في إعداد المشغل:", error);
     });
 }
-
     // تحديد نوع الملف تلقائيًا
     function getStreamType(url) {
         if (url.includes(".m3u8")) {
