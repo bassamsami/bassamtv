@@ -137,6 +137,56 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // دالة لسحب الرابط من Worker
+    async function playChannel(url, key) {
+    if (!url) {
+        console.error("رابط القناة غير موجود!");
+        showErrorDialog("رابط القناة غير موجود!");
+        return;
+    }
+
+    let finalUrl = url;
+    let finalKey = key;
+
+    // إذا كان الرابط يحتوي على رابطين (PHP & Worker)
+    const urls = url.split('&').map(u => u.trim()); // فصل الرابطين
+
+    // المفاتيح الثابتة
+    const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
+    const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
+    const staticKeyCombined = `${staticKeyid}:${staticKey}`;
+
+    // دالة لسحب الرابط من PHP
+    async function fetchFromPHP(phpUrl) {
+        try {
+            const response = await fetch(phpUrl);
+            const text = await response.text();
+
+            // البحث عن الوسم manifestUri = "
+            const manifestUriMatch = text.match(/manifestUri\s*=\s*["']([^"']+)["']/);
+            if (manifestUriMatch && manifestUriMatch[1]) {
+                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
+                return {
+                    url: manifestUriMatch[1],
+                    key: staticKeyCombined // استخدام المفاتيح الثابتة
+                };
+            }
+
+            // البحث عن الوسم file: "
+            const fileMatch = text.match(/file:\s*["']([^"']+)["']/);
+            if (fileMatch && fileMatch[1]) {
+                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
+                return {
+                    url: fileMatch[1],
+                    key: staticKeyCombined // استخدام المفاتيح الثابتة
+                };
+            }
+        } catch (error) {
+            console.error(`حدث خطأ أثناء جلب البيانات من الرابط: ${phpUrl}`, error);
+        }
+        return null;
+    }
+
+    // دالة لسحب الرابط من Worker
     async function fetchFromWorker(workerUrl) {
         try {
             const response = await fetch(workerUrl);
@@ -160,27 +210,26 @@ document.addEventListener("DOMContentLoaded", function () {
     if (urls.length > 1) {
         const [phpUrl, workerUrl] = urls;
 
-        // جرب الرابط الأول (PHP)
-        phpResult = await fetchFromPHP(phpUrl);
+        // جرب سحب الرابطين في نفس الوقت
+        const [phpResult, workerResult] = await Promise.all([
+            fetchFromPHP(phpUrl),
+            fetchFromWorker(workerUrl)
+        ]);
 
+        // استخدام الرابط الذي يعمل أولاً
         if (phpResult) {
             finalUrl = phpResult.url;
             finalKey = phpResult.key;
             console.log("تم سحب الرابط من PHP:", finalUrl);
+        } else if (workerResult) {
+            finalUrl = workerResult.url;
+            finalKey = workerResult.key;
+            console.log("تم سحب الرابط من Worker:", finalUrl);
         } else {
-            // إذا فشل الرابط الأول، جرب الرابط الثاني (Worker)
-            workerResult = await fetchFromWorker(workerUrl);
-
-            if (workerResult) {
-                finalUrl = workerResult.url;
-                finalKey = workerResult.key;
-                console.log("تم سحب الرابط من Worker:", finalUrl);
-            } else {
-                // إذا فشل الرابط الثاني أيضًا
-                console.error("لم يتم سحب أي رابط يعمل.");
-                showErrorDialog("لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.");
-                return;
-            }
+            // إذا فشل الرابطان
+            console.error("لم يتم سحب أي رابط يعمل.");
+            showErrorDialog("لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.");
+            return;
         }
     } else {
         // إذا كان الرابط مباشرًا (مثل mpd أو m3u8)، نستخدمه مباشرة
@@ -236,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (finalUrl === phpResult?.url) {
                 // إذا كان الرابط الأول هو الذي فشل، جرب الرابط الثاني
-                workerResult = await fetchFromWorker(workerUrl);
+                const workerResult = await fetchFromWorker(workerUrl);
 
                 if (workerResult) {
                     finalUrl = workerResult.url;
@@ -254,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             } else if (finalUrl === workerResult?.url) {
                 // إذا كان الرابط الثاني هو الذي فشل، جرب الرابط الأول
-                phpResult = await fetchFromPHP(phpUrl);
+                const phpResult = await fetchFromPHP(phpUrl);
 
                 if (phpResult) {
                     finalUrl = phpResult.url;
@@ -288,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
             playerContainer.style.height = "100%";
         } else {
             playerContainer.style.width = "100%";
-            playerContainer.style.height = "80vh";
+            playerContainer.style.height = "70vh";
         }
     });
 }
