@@ -101,60 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
     const staticKeyCombined = `${staticKeyid}:${staticKey}`;
 
-    // تعريف المتغيرات في نطاق أوسع
-    let phpResult = null;
-    let workerResult = null;
-
-    // دالة لسحب الرابط من PHP
-    async function fetchFromPHP(phpUrl) {
-        try {
-            const response = await fetch(phpUrl);
-            const text = await response.text();
-
-            // البحث عن الوسم manifestUri = "
-            const manifestUriMatch = text.match(/manifestUri\s*=\s*["']([^"']+)["']/);
-            if (manifestUriMatch && manifestUriMatch[1]) {
-                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
-                return {
-                    url: manifestUriMatch[1],
-                    key: staticKeyCombined // استخدام المفاتيح الثابتة
-                };
-            }
-
-            // البحث عن الوسم file: "
-            const fileMatch = text.match(/file:\s*["']([^"']+)["']/);
-            if (fileMatch && fileMatch[1]) {
-                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
-                return {
-                    url: fileMatch[1],
-                    key: staticKeyCombined // استخدام المفاتيح الثابتة
-                };
-            }
-        } catch (error) {
-            console.error(`حدث خطأ أثناء جلب البيانات من الرابط: ${phpUrl}`, error);
-        }
-        return null;
-    }
-
-    // دالة لسحب الرابط من Worker
-    async function playChannel(url, key) {
-    if (!url) {
-        console.error("رابط القناة غير موجود!");
-        showErrorDialog("رابط القناة غير موجود!");
-        return;
-    }
-
-    let finalUrl = url;
-    let finalKey = key;
-
-    // إذا كان الرابط يحتوي على رابطين (PHP & Worker)
-    const urls = url.split('&').map(u => u.trim()); // فصل الرابطين
-
-    // المفاتيح الثابتة
-    const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
-    const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
-    const staticKeyCombined = `${staticKeyid}:${staticKey}`;
-
     // دالة لسحب الرابط من PHP
     async function fetchFromPHP(phpUrl) {
         try {
@@ -337,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function () {
             playerContainer.style.height = "100%";
         } else {
             playerContainer.style.width = "100%";
-            playerContainer.style.height = "70vh";
+            playerContainer.style.height = "80vh";
         }
     });
 }
@@ -358,7 +304,6 @@ function getStreamType(url) {
         return "auto";
     }
 }
-
     // البحث عن القنوات
     searchInput.addEventListener("input", () => {
         const searchTerm = searchInput.value.toLowerCase();
