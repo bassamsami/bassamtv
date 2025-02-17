@@ -68,112 +68,194 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // دالة لجلب manifestUri و clearkeys من ملف PHP
-    async function fetchManifestAndKeys(phpUrl) {
+ // دالة لجلب manifestUri و clearkeys من ملف PHP
+ async function playChannel(url, key) {
+    if (!url) {
+        console.error("رابط القناة غير موجود!");
+        return;
+    }
+
+    let finalUrl = url;
+    let finalKey = key;
+
+    // إذا كان الرابط يحتوي على رابطين (PHP & Worker)
+    const urls = url.split('&').map(u => u.trim()); // فصل الرابطين
+
+    for (const currentUrl of urls) {
         try {
-            const response = await fetch(phpUrl);
-            const text = await response.text();
+            // إذا كان الرابط من YouTube
+            if (currentUrl.includes("youtube.com/watch")) {
+                const response = await fetch(currentUrl); // جلب محتوى الصفحة
+                const text = await response.text();
 
-            // استخراج رابط الـ manifestUri
-            const manifestUriMatch = text.match(/const manifestUri\s*=\s*["']([^"']+)["']/);
-            const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
-
-            // استخراج مفاتيح clearkeys
-            const clearkeysMatch = text.match(/clearKeys\s*:\s*({[^}]+})/);
-            const clearkeys = clearkeysMatch ? JSON.parse(clearkeysMatch[1].replace(/'/g, '"')) : null;
-
-            return { manifestUri, clearkeys };
-        } catch (error) {
-            console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
-            return { manifestUri: null, clearkeys: null };
-        }
-    }
-
-    // دالة لتحويل clearkeys إلى التنسيق المطلوب
-    function formatClearkeys(clearkeys) {
-        if (typeof clearkeys === 'object') {
-            // إذا كانت clearkeys بتنسيق JSON، تحويلها إلى التنسيق المطلوب
-            const keyid = Object.keys(clearkeys)[0];
-            const key = clearkeys[keyid];
-            return `${keyid}:${key}`;
-        } else if (typeof clearkeys === 'string') {
-            // إذا كانت clearkeys بتنسيق keyid:key، إرجاعها كما هي
-            return clearkeys;
-        }
-        return null;
-    }
-
-    // تشغيل القناة (يدعم الطريقتين)
-    async function playChannel(url, key) {
-        if (!url) {
-            console.error("رابط القناة غير موجود!");
-            return;
-        }
-
-        let finalUrl = url;
-        let finalKey = key;
-
-        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
-        if (url.endsWith('.php')) {
-            const { manifestUri, clearkeys } = await fetchManifestAndKeys(url);
-            if (manifestUri) finalUrl = manifestUri;
-            if (clearkeys) finalKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
-        }
-
-        // تحويل التنسيق keyid:key إلى JSON
-        const drmConfig = finalKey ? {
-            clearkey: {
-                keyId: finalKey.split(':')[0],
-                key: finalKey.split(':')[1]
+                // البحث عن رابط البث المباشر (Live Stream)
+                const hlsManifestUrlMatch = text.match(/"hlsManifestUrl":"([^"]+)"/);
+                if (hlsManifestUrlMatch && hlsManifestUrlMatch[1]) {
+                    finalUrl = hlsManifestUrlMatch[1].replace(/\\\//g, '/'); // إصلاح الرابط
+                    console.log("تم سحب رابط البث المباشر من YouTube:", finalUrl);
+                    break;
+                } 
+                // إذا لم يكن بثًا مباشرًا، البحث عن رابط الفيديو العادي
+                else {
+                    const serverAbrStreamingUrlMatch = text.match(/"serverAbrStreamingUrl":"([^"]+)"/);
+                    if (serverAbrStreamingUrlMatch && serverAbrStreamingUrlMatch[1]) {
+                        finalUrl = serverAbrStreamingUrlMatch[1].replace(/\\\//g, '/'); // إصلاح الرابط
+                        console.log("تم سحب رابط الفيديو العادي من YouTube:", finalUrl);
+                        break;
+                    }
+                }
             }
-        } : null;
 
-        // إعداد المشغل
-        const playerInstance = jwplayer("player").setup({
-            playlist: [{
-                sources: [{
-                    file: finalUrl,
-                    type: getStreamType(finalUrl),
-                    drm: drmConfig
-                }]
-            }],
-            width: "100%",
-            height: "100%",
-            autostart: true,
-            cast: {},
-            sharing: false
-        });
+            // إذا كان الرابط ينتهي بـ .php
+            if (currentUrl.endsWith('.php')) {
+                const response = await fetch(currentUrl);
+                const text = await response.text();
 
-        // إعداد الأحداث للمشغل
-        playerInstance.on('ready', () => {
-            console.log("المشغل جاهز للتشغيل!");
-        });
+                // البحث عن الوسم manifestUri = "
+                const manifestUriMatch = text.match(/manifestUri\s*=\s*["']([^"']+)["']/);
+                if (manifestUriMatch && manifestUriMatch[1]) {
+                    finalUrl = manifestUriMatch[1];
+                    console.log("تم سحب الرابط من manifestUri:", finalUrl);
+					// استخدام المفاتيح الثابتة
+                const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
+                const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
+                finalKey = `${staticKeyid}:${staticKey}`; // استخدام المفاتيح الثابتة
+                console.log("تم استخدام المفاتيح الثابتة:", finalKey);
+                    
+                    break;
+                }
 
-        playerInstance.on('error', (error) => {
-            console.error("حدث خطأ في المشغل:", error);
-        });
+                // البحث عن الوسم file: "
+                const fileMatch = text.match(/file:\s*["']([^"']+)["']/);
+                if (fileMatch && fileMatch[1]) {
+                    finalUrl = fileMatch[1];
+                    console.log("تم سحب الرابط من file:", finalUrl);
+					// استخدام المفاتيح الثابتة
+                const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
+                const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
+                finalKey = `${staticKeyid}:${staticKey}`; // استخدام المفاتيح الثابتة
+                console.log("تم استخدام المفاتيح الثابتة:", finalKey);
+                    
+                    break;
+                }
+            }
 
-        playerInstance.on('setupError', (error) => {
-            console.error("حدث خطأ في إعداد المشغل:", error);
-        });
-    }
+            // إذا كان الرابط من Worker
+            if (currentUrl.includes("workers.dev")) {
+                const response = await fetch(currentUrl);
+                const data = await response.json();
 
-    // تحديد نوع الملف تلقائيًا
-    function getStreamType(url) {
-        if (url.includes(".m3u8")) {
-            return "hls";
-        } else if (url.includes(".mpd")) {
-            return "dash";
-        } else if (url.includes(".mp4") || url.includes(".m4v")) {
-            return "mp4";
-        } else if (url.includes(".ts") || url.includes(".mpegts")) {
-            return "mpegts";
-        } else if (url.includes(".php") || url.includes(".embed")) {
-            return "html5";
-        } else {
-            return "auto";
+                // استخدام stream_url إذا كان موجودًا
+                if (data.stream_url) {
+                    finalUrl = data.stream_url;
+                    console.log("تم سحب رابط البث من Worker:", finalUrl);
+					// استخدام المفاتيح الثابتة
+                const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
+                const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
+                finalKey = `${staticKeyid}:${staticKey}`; // استخدام المفاتيح الثابتة
+                console.log("تم استخدام المفاتيح الثابتة:", finalKey);
+                    
+                    break;
+                }
+            }
+
+            // إذا كان الرابط مباشرًا (MPD أو M3U8)
+            if (currentUrl.endsWith('.mpd') || currentUrl.endsWith('.m3u8')) {
+                finalUrl = currentUrl; // استخدام الرابط مباشرة
+                console.log("تم استخدام رابط البث المباشر:", finalUrl);
+                break;
+            }
+        } catch (error) {
+            console.error(`حدث خطأ أثناء جلب البيانات من الرابط: ${currentUrl}`, error);
         }
     }
+
+    // إذا لم يتم سحب أي رابط، نستخدم الرابط الأصلي
+    if (!finalUrl) {
+        finalUrl = url;
+        console.log("تم استخدام الرابط الأصلي:", finalUrl);
+    }
+
+    // إذا تمت إضافة مفتاح جديد يدويًا (بالطريقة التقليدية)، استخدامه بدلاً من المفاتيح الثابتة
+    if (key) {
+        finalKey = key; // استخدام المفتاح الجديد
+        console.log("تم استخدام المفتاح الجديد:", finalKey);
+    }
+
+    // تحويل التنسيق keyid:key إلى إعدادات DRM
+    const drmConfig = finalKey ? {
+        clearkey: {
+            keyId: finalKey.split(':')[0], // الجزء الأول هو keyid
+            key: finalKey.split(':')[1]   // الجزء الثاني هو key
+        },
+        robustness: 'SW_SECURE_CRYPTO' // إضافة robustness
+    } : null;
+
+    // إعداد المشغل
+    const playerInstance = jwplayer("player").setup({
+        playlist: [{
+            sources: [{
+                file: finalUrl,
+                type: getStreamType(finalUrl),
+                drm: drmConfig
+            }]
+        }],
+        width: "100%",
+        height: "100%",
+        autostart: true,
+        cast: {},
+        sharing: false
+    });
+
+    // إعداد الأحداث للمشغل
+    playerInstance.on('ready', () => {
+        console.log("المشغل جاهز للتشغيل!");
+    });
+
+    playerInstance.on('error', (error) => {
+        console.error("حدث خطأ في المشغل:", error);
+        if (error.code === 246012) {
+            console.error("السبب المحتمل: الرابط أو المفاتيح غير صحيحة.");
+        }
+    });
+
+    playerInstance.on('setupError', (error) => {
+        console.error("حدث خطأ في إعداد المشغل:", error);
+    });
+}
+
+async function fetchManifestAndKeys(phpUrl) {
+    try {
+        const response = await fetch(phpUrl);
+        const text = await response.text(); // جلب محتوى الصفحة كـ نص
+
+        // البحث عن الوسم manifestUri = "
+        const manifestUriMatch = text.match(/manifestUri\s*=\s*["']([^"']+)["']/);
+        const manifestUri = manifestUriMatch ? manifestUriMatch[1] : null;
+
+        return { manifestUri };
+    } catch (error) {
+        console.error("حدث خطأ أثناء جلب البيانات من ملف PHP:", error);
+        return { manifestUri: null };
+    }
+}
+
+// دالة لتحديد نوع الملف تلقائيًا
+function getStreamType(url) {
+    if (url.includes(".m3u8")) {
+        return "hls";
+    } else if (url.includes(".mpd")) {
+        return "dash";
+    } else if (url.includes(".mp4") || url.includes(".m4v")) {
+        return "mp4";
+    } else if (url.includes(".ts") || url.includes(".mpegts")) {
+        return "mpegts";
+    } else if (url.includes(".php") || url.includes(".embed")) {
+        return "html5";
+    } else {
+        return "auto";
+    }
+}
 
     // البحث عن القنوات
     searchInput.addEventListener("input", () => {

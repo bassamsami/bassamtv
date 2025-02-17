@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<meta name="title" content="MoviBall | بث مباشر للمباريات والقنوات الرياضية بجودة عالية">
+    <meta name="title" content="MoviBall | بث مباشر للمباريات والقنوات الرياضية بجودة عالية">
     <meta name="description" content="مشاهدة مباريات اليوم بث مباشر بدون تقطيع على موقع MoviBall. استمتع بمشاهدة قنوات beIN Sports و SSC والعديد من القنوات الرياضية المشفرة والمفتوحة بجودة عالية.">
     <meta name="keywords" content="بث مباشر, مباريات اليوم, beIN Sports مباشر, SSC بث مباشر, قنوات رياضية, مشاهدة المباريات, قنوات مشفرة, الدوري الإسباني, الدوري الإنجليزي, البث المباشر">
     <meta name="author" content="Bassam Samir">
@@ -20,8 +20,7 @@
     <title>MoviBall Connect</title>
     <link rel="stylesheet" href="user-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-	<script src="https://ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
+    <script src="https://ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
     <script>
         jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
     </script>
@@ -46,7 +45,7 @@
         <div id="main-page">
             <!-- المشغل -->
             <div id="player-container">
-			<div id="player"></div>
+                <div id="player"></div>
             </div>
 
             <!-- زر عرض القنوات -->
@@ -74,9 +73,7 @@
                 <i class="fas fa-table"></i>
             </button>
         </div>
- <div id="online-users-icon" style="position: fixed; top: 50px; right: 60px; background: #28a745; color: white; padding: 10px; border-radius: 25px; font-weight: bold; font-family: Arial, sans-serif;">
-    👥 <span id="online-users-count">0</span>
-  </div>
+
         <!-- ديالوج المباريات -->
         <div id="matches-dialog" class="dialog">
             <div class="dialog-content">
@@ -85,6 +82,15 @@
                     <!-- المباريات سيتم إضافتها هنا عبر JavaScript -->
                 </div>
                 <button id="close-matches-dialog" class="close-dialog"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- ديالوج فشل التشغيل -->
+        <div id="error-dialog" class="dialog">
+            <div class="dialog-content">
+                <h2>خطأ في التشغيل</h2>
+                <p id="error-message">لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.</p>
+                <button id="close-error-dialog" class="close-dialog"><i class="fas fa-times"></i></button>
             </div>
         </div>
     </main>
@@ -102,27 +108,5 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script src="firebase.js"></script>
     <script src="user-script.js"></script>
-	<script type="module">
-    import { getDatabase, ref, onValue, set, remove, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js";
-    import { app } from 'firebase.js';
-
-    const db = getDatabase(app);
-    const userId = `user_${Math.random().toString(36).substring(2)}`;
-    const userRef = ref(db, `activeUsers/${userId}`);
-
-    // تسجيل المستخدم عند الدخول
-    set(userRef, { online: true, timestamp: serverTimestamp() });
-
-    // إزالة المستخدم عند الخروج أو إغلاق الصفحة
-    onDisconnect(userRef).remove();
-    window.addEventListener('beforeunload', () => remove(userRef));
-
-    // تحديث عدد المستخدمين المباشر
-    const activeUsersRef = ref(db, 'activeUsers');
-    onValue(activeUsersRef, (snapshot) => {
-      const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-      document.getElementById('online-users-count').innerText = count;
-    });
-  </script>
 </body>
 </html>
