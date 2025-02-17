@@ -101,6 +101,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
     const staticKeyCombined = `${staticKeyid}:${staticKey}`;
 
+    // تعريف المتغيرات في نطاق أوسع
+    let phpResult = null;
+    let workerResult = null;
+
     // دالة لسحب الرابط من PHP
     async function fetchFromPHP(phpUrl) {
         try {
@@ -157,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const [phpUrl, workerUrl] = urls;
 
         // جرب الرابط الأول (PHP)
-        let phpResult = await fetchFromPHP(phpUrl);
+        phpResult = await fetchFromPHP(phpUrl);
 
         if (phpResult) {
             finalUrl = phpResult.url;
@@ -165,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("تم سحب الرابط من PHP:", finalUrl);
         } else {
             // إذا فشل الرابط الأول، جرب الرابط الثاني (Worker)
-            let workerResult = await fetchFromWorker(workerUrl);
+            workerResult = await fetchFromWorker(workerUrl);
 
             if (workerResult) {
                 finalUrl = workerResult.url;
@@ -230,9 +234,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (urls.length > 1) {
             const [phpUrl, workerUrl] = urls;
 
-            if (finalUrl === phpUrl) {
+            if (finalUrl === phpResult?.url) {
                 // إذا كان الرابط الأول هو الذي فشل، جرب الرابط الثاني
-                const workerResult = await fetchFromWorker(workerUrl);
+                workerResult = await fetchFromWorker(workerUrl);
 
                 if (workerResult) {
                     finalUrl = workerResult.url;
@@ -248,9 +252,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     showErrorDialog("لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.");
                 }
-            } else if (finalUrl === workerUrl) {
+            } else if (finalUrl === workerResult?.url) {
                 // إذا كان الرابط الثاني هو الذي فشل، جرب الرابط الأول
-                const phpResult = await fetchFromPHP(phpUrl);
+                phpResult = await fetchFromPHP(phpUrl);
 
                 if (phpResult) {
                     finalUrl = phpResult.url;
