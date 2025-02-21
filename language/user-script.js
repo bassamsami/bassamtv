@@ -69,15 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // دالة لجلب manifestUri و clearkeys من ملف PHP
-async function playChannel(url, key) {
-    if (!url) {
-        console.error("رابط القناة غير موجود!");
-        return;
-    }
-
-    let finalUrl = url;
-    let finalKey = key;
-
+async function fetchWebsiteContent(url) {
     // قائمة بالوسائط المتاحة
     const proxies = [
         'https://cors-anywhere.herokuapp.com/',
@@ -91,9 +83,10 @@ async function playChannel(url, key) {
         for (const proxy of proxies) {
             try {
                 const proxyUrl = proxy + encodeURIComponent(url);
-                const response = await fetch(proxyUrl, { method: 'HEAD' });
+                const response = await fetch(proxyUrl);
                 if (response.ok) {
-                    return proxyUrl; // إذا نجح الوسيط، نعيد الرابط
+                    const text = await response.text();
+                    return text; // إذا نجح الوسيط، نعيد محتوى الموقع
                 }
             } catch (error) {
                 console.error(`فشل الوسيط: ${proxy}`, error);
@@ -102,16 +95,24 @@ async function playChannel(url, key) {
         return null; // إذا فشلت جميع الوسائط
     }
 
-    // إذا كان الرابط يحتاج إلى وسيط (CORS محمي)
-    if (url.startsWith('http') && !url.includes('cors-anywhere') && !url.includes('allorigins')) {
-        const proxyUrl = await testProxies(url);
-        if (proxyUrl) {
-            finalUrl = proxyUrl; // استخدام الوسيط الناجح
-        } else {
-            console.error("فشل جميع الوسائط في تجاوز CORS.");
-            return;
-        }
+    // جلب محتوى الموقع عبر الوسيط
+    const content = await testProxies(url);
+    if (!content) {
+        console.error("فشل جميع الوسائط في جلب محتوى الموقع.");
+        return null;
     }
+
+    return content;
+}
+
+async function playChannel(url, key) {
+    if (!url) {
+        console.error("رابط القناة غير موجود!");
+        return;
+    }
+
+    let finalUrl = url;
+    let finalKey = key;
 
     // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
     if (url.endsWith('.php')) {
@@ -125,6 +126,28 @@ async function playChannel(url, key) {
             finalKey = `${staticKeyid}:${staticKey}`; // استخدام المفاتيح الثابتة
         } else {
             console.error("لم يتم العثور على رابط البث في ملف PHP.");
+            return;
+        }
+    }
+
+    // إذا كان الرابط يحتاج إلى وسيط (CORS محمي)
+    if (url.startsWith('http') && !url.includes('cors-anywhere') && !url.includes('allorigins')) {
+        const websiteContent = await fetchWebsiteContent(url);
+        if (!websiteContent) {
+            console.error("فشل جلب محتوى الموقع.");
+            return;
+        }
+
+        // تحليل محتوى الموقع لاستخراج الرابط النهائي
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(websiteContent, 'text/html');
+
+        // استخراج الرابط النهائي من الموقع
+        const videoElement = doc.querySelector('video');
+        if (videoElement && videoElement.src) {
+            finalUrl = videoElement.src;
+        } else {
+            console.error("لم يتم العثور على رابط الفيديو في الموقع.");
             return;
         }
     }
