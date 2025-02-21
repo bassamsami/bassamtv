@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // دالة لجلب manifestUri و clearkeys من ملف PHP
- async function playChannel(url, key) {
+async function playChannel(url, key) {
     if (!url) {
         console.error("رابط القناة غير موجود!");
         return;
@@ -78,15 +78,39 @@ document.addEventListener("DOMContentLoaded", function () {
     let finalUrl = url;
     let finalKey = key;
 
-    // استخدام وسيط CORS إذا كان الرابط يحتاج إليه
-    const proxyUrl1 = 'https://cors-anywhere.herokuapp.com/';
-    const proxyUrl2 = 'https://api.allorigins.win/raw?url=';
+    // قائمة بالوسائط المتاحة
+    const proxies = [
+        'https://cors-anywhere.herokuapp.com/',
+        'https://api.allorigins.win/raw?url=',
+        'https://thingproxy.freeboard.io/fetch/',
+        'https://corsproxy.io/'
+    ];
+
+    // دالة لاختبار الوسائط
+    async function testProxies(url) {
+        for (const proxy of proxies) {
+            try {
+                const proxyUrl = proxy + encodeURIComponent(url);
+                const response = await fetch(proxyUrl, { method: 'HEAD' });
+                if (response.ok) {
+                    return proxyUrl; // إذا نجح الوسيط، نعيد الرابط
+                }
+            } catch (error) {
+                console.error(`فشل الوسيط: ${proxy}`, error);
+            }
+        }
+        return null; // إذا فشلت جميع الوسائط
+    }
 
     // إذا كان الرابط يحتاج إلى وسيط (CORS محمي)
     if (url.startsWith('http') && !url.includes('cors-anywhere') && !url.includes('allorigins')) {
-        finalUrl = proxyUrl1 + url; // استخدام cors-anywhere كوسيط
-        // أو يمكنك استخدام proxyUrl2 إذا كنت تفضل allorigins
-        // finalUrl = proxyUrl2 + encodeURIComponent(url);
+        const proxyUrl = await testProxies(url);
+        if (proxyUrl) {
+            finalUrl = proxyUrl; // استخدام الوسيط الناجح
+        } else {
+            console.error("فشل جميع الوسائط في تجاوز CORS.");
+            return;
+        }
     }
 
     // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
