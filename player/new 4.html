@@ -104,123 +104,133 @@
     </div>
 	<script>
 document.addEventListener("DOMContentLoaded", () => {
-    const video = document.querySelector("video");
-    const controls = document.querySelector(".controls");
+            const video = document.querySelector("video");
 
-    if (!video || !controls) {
-        console.error("Video or controls element not found!");
-        return;
-    }
-
-    console.log("Video element:", video);
-
-    // إضافة رابط البث والمفتاح
-    const videoSrc = "https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd"; // رابط البث
-    const keyId = "b253c726c24c7c94a3ddf9b1907e2c76"; // Key ID
-    const key = "097963d6ad73c3d712a104981de0ed42"; // Key
-
-    console.log("Starting video playback...");
-    console.log("Video Source:", videoSrc);
-
-    // تحديد نوع التنسيق تلقائيًا
-    function getVideoType(src) {
-        if (src.endsWith(".mpd")) {
-            return "application/dash+xml";
-        } else if (src.endsWith(".m3u8")) {
-            return "application/vnd.apple.mpegurl";
-        } else if (src.endsWith(".mp4")) {
-            return "video/mp4";
-        }
-        return null;
-    }
-
-    const videoType = getVideoType(videoSrc);
-    console.log("Video Type:", videoType);
-
-    if (videoType) {
-        playVideo(videoSrc, videoType);
-    } else {
-        console.error("Unsupported video format");
-    }
-
-    if (keyId && key) {
-        console.log("Setting up DRM...");
-        setupDRM(video, keyId, key);
-    }
-
-    function playVideo(src, type) {
-        if (type === "application/dash+xml") {
-            console.log("Initializing Dash.js...");
-            const player = dashjs.MediaPlayer().create();
-            player.initialize(video, src, true);
-        } else if (type === "application/vnd.apple.mpegurl") {
-            if (Hls.isSupported()) {
-                console.log("Initializing Hls.js...");
-                const hls = new Hls();
-                hls.loadSource(src);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                    console.log("Manifest parsed, starting playback...");
-                    video.play();
-                });
-            } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-                console.log("Using native HLS support...");
-                video.src = src;
-                video.addEventListener("loadedmetadata", function () {
-                    console.log("Video metadata loaded, starting playback...");
-                    video.play();
-                });
+            if (!video) {
+                console.error("Video element not found!");
+                return;
             }
-        } else if (type === "video/mp4") {
-            console.log("Playing MP4 video...");
-            video.src = src;
-            video.play();
-        }
-    }
 
-    function setupDRM(video, keyId, key) {
-        const config = [{
-            initDataTypes: ['cenc'],
-            audioCapabilities: [{ contentType: 'audio/mp4; codecs="mp4a.40.2"' }],
-            videoCapabilities: [{ contentType: 'video/mp4; codecs="avc1.64001e"' }]
-        }];
+            console.log("Video element:", video);
 
-        navigator.requestMediaKeySystemAccess('org.w3.clearkey', config).then(function (access) {
-            console.log("DRM access granted");
-            return access.createMediaKeys();
-        }).then(function (mediaKeys) {
-            console.log("MediaKeys created");
-            video.setMediaKeys(mediaKeys);
-            const session = mediaKeys.createSession();
-            const keyObj = {
-                kty: "oct",
-                kid: keyId,
-                k: key
-            };
-            const keyMessage = new TextEncoder().encode(JSON.stringify({
-                keys: [keyObj],
-                type: "temporary"
-            }));
-            session.update(keyMessage);
-        }).catch(function (error) {
-            console.error("DRM setup failed:", error);
-        });
-    }
+            // رابط البث
+            const videoSrc = "https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd"; // رابط البث
 
-    function toggleMainState(e) {
-        e.stopPropagation();
-        const path = e.composedPath();
-        if (path && !path.includes(controls)) {
-            if (video.paused) {
-                video.play();
+            // معلومات ClearKey DRM
+            const keyId = "b253c726c24c7c94a3ddf9b1907e2c76"; // Key ID
+            const key = "097963d6ad73c3d712a104981de0ed42"; // Key
+
+            console.log("Starting video playback...");
+            console.log("Video Source:", videoSrc);
+
+            // تحديد نوع التنسيق تلقائيًا
+            function getVideoType(src) {
+                if (src.endsWith(".mpd")) {
+                    return "application/dash+xml";
+                } else if (src.endsWith(".m3u8")) {
+                    return "application/vnd.apple.mpegurl";
+                } else if (src.endsWith(".mp4")) {
+                    return "video/mp4";
+                }
+                return null;
+            }
+
+            const videoType = getVideoType(videoSrc);
+            console.log("Video Type:", videoType);
+
+            if (videoType) {
+                playVideo(videoSrc, videoType);
             } else {
-                video.pause();
+                console.error("Unsupported video format");
             }
-        }
-    }
 
-    video.addEventListener("click", toggleMainState);
-});
+            if (keyId && key) {
+                console.log("Setting up DRM...");
+                setupDRM(video, keyId, key);
+            }
+
+            function playVideo(src, type) {
+                if (type === "application/dash+xml") {
+                    console.log("Initializing Dash.js...");
+                    const player = dashjs.MediaPlayer().create();
+                    player.initialize(video, src, true);
+                } else if (type === "application/vnd.apple.mpegurl") {
+                    if (Hls.isSupported()) {
+                        console.log("Initializing Hls.js...");
+                        const hls = new Hls();
+                        hls.loadSource(src);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                            console.log("Manifest parsed, starting playback...");
+                            video.play();
+                        });
+                    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                        console.log("Using native HLS support...");
+                        video.src = src;
+                        video.addEventListener("loadedmetadata", function () {
+                            console.log("Video metadata loaded, starting playback...");
+                            video.play();
+                        });
+                    }
+                } else if (type === "video/mp4") {
+                    console.log("Playing MP4 video...");
+                    video.src = src;
+                    video.play();
+                }
+            }
+
+            function setupDRM(video, keyId, key) {
+                const config = [{
+                    initDataTypes: ['cenc'],
+                    audioCapabilities: [{ 
+                        contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                        robustness: 'SW_SECURE_CRYPTO' // Robustness Level للصوت
+                    }],
+                    videoCapabilities: [{ 
+                        contentType: 'video/mp4; codecs="avc1.64001e"',
+                        robustness: 'SW_SECURE_CRYPTO' // Robustness Level للفيديو
+                    }]
+                }];
+
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey', config)
+                    .then(function (access) {
+                        console.log("DRM access granted");
+                        return access.createMediaKeys();
+                    })
+                    .then(function (mediaKeys) {
+                        console.log("MediaKeys created");
+                        video.setMediaKeys(mediaKeys);
+                        const session = mediaKeys.createSession();
+                        const keyObj = {
+                            kty: "oct",
+                            kid: keyId,
+                            k: key
+                        };
+                        const keyMessage = new TextEncoder().encode(JSON.stringify({
+                            keys: [keyObj],
+                            type: "temporary"
+                        }));
+                        session.update(keyMessage);
+                    })
+                    .catch(function (error) {
+                        console.error("DRM setup failed:", error);
+                    });
+            }
+
+            function toggleMainState(e) {
+                e.stopPropagation();
+                const path = e.composedPath();
+                if (path && !path.includes(controls)) {
+                    if (video.paused) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                }
+            }
+
+            video.addEventListener("click", toggleMainState);
+        });
 	</script>
 </body>
 </html>
