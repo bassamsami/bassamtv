@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player with DRM</title>
+    <title>Video Player with DASH and DRM</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="video-container">
-        <video id="video" autoplay controls></video>
+        <video id="video" controls></video>
         <div class="player-state">
             <span class="state-btn state-backward">
                 <ion-icon name="play-back-outline"></ion-icon>
@@ -96,7 +96,8 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.7/shaka-player.compiled.js"></script>
+    <!-- مكتبة dash.js -->
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
