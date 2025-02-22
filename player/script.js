@@ -1,3 +1,39 @@
+const video = document.getElementById('video');
+const player = new shaka.Player(video);
+
+// Configure DRM (ClearKey)
+const clearkeyConfig = {
+    clearkey: {
+        keyId: 'b253c726c24c7c94a3ddf9b1907e2c76', // Replace with your key ID
+        key: '097963d6ad73c3d712a104981de0ed42'       // Replace with your key
+    }
+};
+
+player.configure({
+    drm: clearkeyConfig,
+    drm: {
+        robustness: 'SW_SECURE_CRYPTO' // Set robustness level
+    }
+});
+
+// Load the video
+async function loadVideo(url) {
+    try {
+        await player.load(url);
+        console.log('Video loaded successfully');
+    } catch (error) {
+        console.error('Error loading video:', error);
+    }
+}
+
+// Example usage
+const videoUrl = 'https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd'; // Replace with your video URL
+loadVideo(videoUrl);
+
+// --------------------------
+// باقي أكواد التحكم في الفيديو
+// --------------------------
+
 const fullscreen = document.querySelector(".fullscreen-btn");
 const playPause = document.querySelector(".play-pause");
 const volume = document.querySelector(".volume");
@@ -24,9 +60,6 @@ const speedButtons = document.querySelectorAll(".setting-menu li");
 const backwardSate = document.querySelector(".state-backward");
 const forwardSate = document.querySelector(".state-forward");
 const loading = document.querySelector(".custom-loader");
-const settingsMenu = document.querySelector(".settings-menu");
-const qualityOptions = document.querySelector(".quality-options");
-const audioOptions = document.querySelector(".audio-options");
 
 let isPlaying = false,
     mouseDownProgress = false,
@@ -458,35 +491,5 @@ function handlePlaybackRateKey(type = "") {
         if (btn.dataset.value == video.playbackRate) {
             btn.classList.add("speed-active");
         }
-    });
-}
-
-function showSettingsMenu() {
-    settingsMenu.classList.toggle("show");
-}
-
-function populateQualityOptions(qualities) {
-    qualityOptions.innerHTML = "";
-    qualities.forEach(quality => {
-        const li = document.createElement("li");
-        li.textContent = quality;
-        li.addEventListener("click", () => {
-            console.log("Selected quality:", quality);
-            settingsMenu.classList.remove("show");
-        });
-        qualityOptions.appendChild(li);
-    });
-}
-
-function populateAudioOptions(audioTracks) {
-    audioOptions.innerHTML = "";
-    audioTracks.forEach(track => {
-        const li = document.createElement("li");
-        li.textContent = track;
-        li.addEventListener("click", () => {
-            console.log("Selected audio track:", track);
-            settingsMenu.classList.remove("show");
-        });
-        audioOptions.appendChild(li);
     });
 }
