@@ -1,20 +1,15 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.4.0/dash.all.min.js"></script>
-    <script src="script.js" defer></script>
+    <title>Video Player with DRM</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="video-container">
-        <video id="video" autoplay muted></video> <!-- إضافة autoplay و muted -->
-        <div class="controls">
+        <video id="video" autoplay controls></video>
+        <div class="player-state">
             <span class="state-btn state-backward">
                 <ion-icon name="play-back-outline"></ion-icon>
                 <span class="backward-duration">5</span>
@@ -65,8 +60,20 @@
                     <span class="mini-player control-btn">
                         <ion-icon name="albums-outline"></ion-icon>
                     </span>
-                    <span class="settings control-btn" onclick="showSettingsMenu()">
-                        <ion-icon name="settings-outline"></ion-icon>
+                    <span class="settings control-btn">
+                        <span class="setting-btn">
+                            <ion-icon name="options-outline"></ion-icon>
+                        </span>
+                        <ul class="setting-menu">
+                            <li data-value="0.25">0.25x</li>
+                            <li data-value="0.5">0.5x</li>
+                            <li data-value="0.75">0.75x</li>
+                            <li data-value="1" class="speed-active">1x</li>
+                            <li data-value="1.25">1.25x</li>
+                            <li data-value="1.5">1.5x</li>
+                            <li data-value="1.75">1.75x</li>
+                            <li data-value="2">2x</li>
+                        </ul>
                     </span>
                     <span class="theater-btn control-btn">
                         <span class="theater-default">
@@ -87,157 +94,9 @@
                 </div>
             </div>
         </div>
-        <div class="settings-menu">
-            <div class="quality-menu">
-                <span>الجودة</span>
-                <ul class="quality-options">
-                    <!-- سيتم تعبئة الخيارات ديناميكيًا -->
-                </ul>
-            </div>
-            <div class="audio-menu">
-                <span>الصوت</span>
-                <ul class="audio-options">
-                    <!-- سيتم تعبئة الخيارات ديناميكيًا -->
-                </ul>
-            </div>
-        </div>
     </div>
-	<script>
-document.addEventListener("DOMContentLoaded", () => {
-            const video = document.querySelector("video");
 
-            if (!video) {
-                console.error("Video element not found!");
-                return;
-            }
-
-            console.log("Video element:", video);
-
-            // رابط البث
-            const videoSrc = "https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd"; // رابط البث
-
-            // معلومات ClearKey DRM
-            const keyId = "b253c726c24c7c94a3ddf9b1907e2c76"; // Key ID
-            const key = "097963d6ad73c3d712a104981de0ed42"; // Key
-	    robustness: 'SW_SECURE_CRYPTO'
-
-            console.log("Starting video playback...");
-            console.log("Video Source:", videoSrc);
-
-            // تحديد نوع التنسيق تلقائيًا
-            function getVideoType(src) {
-                if (src.endsWith(".mpd")) {
-                    return "application/dash+xml";
-                } else if (src.endsWith(".m3u8")) {
-                    return "application/vnd.apple.mpegurl";
-                } else if (src.endsWith(".mp4")) {
-                    return "video/mp4";
-                }
-                return null;
-            }
-
-            const videoType = getVideoType(videoSrc);
-            console.log("Video Type:", videoType);
-
-            if (videoType) {
-                playVideo(videoSrc, videoType);
-            } else {
-                console.error("Unsupported video format");
-            }
-
-            if (keyId && key) {
-                console.log("Setting up DRM...");
-                setupDRM(video, keyId, key);
-            }
-
-            function playVideo(src, type) {
-                if (type === "application/dash+xml") {
-                    console.log("Initializing Dash.js...");
-                    const player = dashjs.MediaPlayer().create();
-                    player.initialize(video, src, true);
-                } else if (type === "application/vnd.apple.mpegurl") {
-                    if (Hls.isSupported()) {
-                        console.log("Initializing Hls.js...");
-                        const hls = new Hls();
-                        hls.loadSource(src);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                            console.log("Manifest parsed, starting playback...");
-                            video.play();
-                        });
-                    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-                        console.log("Using native HLS support...");
-                        video.src = src;
-                        video.addEventListener("loadedmetadata", function () {
-                            console.log("Video metadata loaded, starting playback...");
-                            video.play();
-                        });
-                    }
-                } else if (type === "video/mp4") {
-                    console.log("Playing MP4 video...");
-                    video.src = src;
-                    video.play();
-                }
-            }
-
-            function setupDRM(video, keyId, key) {
-                const config = [{
-                    initDataTypes: ['cenc'],
-                    audioCapabilities: [{ 
-                        contentType: 'audio/mp4; codecs="mp4a.40.2"',
-                        robustness: 'SW_SECURE_CRYPTO' // Robustness Level للصوت
-                    }],
-                    videoCapabilities: [{ 
-                        contentType: 'video/mp4; codecs="avc1.64001e"',
-                        robustness: 'SW_SECURE_CRYPTO' // Robustness Level للفيديو
-                    }],
-                    persistentState: 'not-allowed', // حالة التخزين
-                    distinctiveIdentifier: 'not-allowed' // عدم السماح بإنشاء معرف مميز
-                }];
-
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', config)
-                    .then(function (access) {
-                        console.log("DRM access granted");
-                        return access.createMediaKeys();
-                    })
-                    .then(function (mediaKeys) {
-                        console.log("MediaKeys created");
-                        video.setMediaKeys(mediaKeys);
-                        const session = mediaKeys.createSession();
-                        const keyObj = {
-                            kty: "oct",
-                            kid: keyId,
-                            k: key
-                        };
-                        const keyMessage = new TextEncoder().encode(JSON.stringify({
-                            keys: [keyObj],
-                            type: "temporary"
-                        }));
-                        session.update(keyMessage).then(() => {
-                            console.log("Key added successfully");
-                        }).catch(error => {
-                            console.error("Failed to update session:", error);
-                        });
-                    })
-                    .catch(function (error) {
-                        console.error("DRM setup failed:", error);
-                    });
-            }
-
-            function toggleMainState(e) {
-                e.stopPropagation();
-                const path = e.composedPath();
-                if (path && !path.includes(controls)) {
-                    if (video.paused) {
-                        video.play();
-                    } else {
-                        video.pause();
-                    }
-                }
-            }
-
-            video.addEventListener("click", toggleMainState);
-        });
-	</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.7/shaka-player.compiled.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
