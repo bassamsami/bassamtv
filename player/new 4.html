@@ -15,18 +15,17 @@
 	document.addEventListener("DOMContentLoaded", () => {
     const video = document.querySelector("video");
     const playButton = document.getElementById("playButton");
+    const controls = document.querySelector(".controls");
 
-    if (!video || !playButton) {
-        console.error("Video or playButton element not found!");
+    if (!video || !playButton || !controls) {
+        console.error("Video, playButton, or controls element not found!");
         return;
     }
 
     console.log("Video element:", video);
 
-    // إضافة رابط البث والمفتاح
+    // إضافة رابط البث
     const videoSrc = "https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd"; // رابط البث
-    const keyId = "b253c726c24c7c94a3ddf9b1907e2c76"; // Key ID
-    const key = "097963d6ad73c3d712a104981de0ed42"; // Key
 
     console.log("Starting video playback...");
     console.log("Video Source:", videoSrc);
@@ -83,14 +82,32 @@
     }
 
     playButton.addEventListener("click", () => {
-        video.play();
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
     });
+
+    function toggleMainState(e) {
+        e.stopPropagation();
+        if (!e.composedPath().includes(controls)) {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+    }
+
+    video.addEventListener("click", toggleMainState);
 });
 </script>
 </head>
 <body>
     <div class="video-container">
-        <video id="video" autoplay></video>
+        <video id="video" autoplay muted></video> <!-- إضافة muted للتشغيل التلقائي -->
+        <div class="controls">
         <div class="player-state">
             <span class="state-btn state-backward">
                 <ion-icon name="play-back-outline"></ion-icon>
