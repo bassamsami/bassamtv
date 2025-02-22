@@ -189,7 +189,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     videoCapabilities: [{ 
                         contentType: 'video/mp4; codecs="avc1.64001e"',
                         robustness: 'SW_SECURE_CRYPTO' // Robustness Level للفيديو
-                    }]
+                    }],
+                    persistentState: 'not-allowed', // حالة التخزين
+                    distinctiveIdentifier: 'not-allowed' // عدم السماح بإنشاء معرف مميز
                 }];
 
                 navigator.requestMediaKeySystemAccess('org.w3.clearkey', config)
@@ -210,7 +212,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             keys: [keyObj],
                             type: "temporary"
                         }));
-                        session.update(keyMessage);
+                        session.update(keyMessage).then(() => {
+                            console.log("Key added successfully");
+                        }).catch(error => {
+                            console.error("Failed to update session:", error);
+                        });
                     })
                     .catch(function (error) {
                         console.error("DRM setup failed:", error);
