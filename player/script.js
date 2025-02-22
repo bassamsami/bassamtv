@@ -1,34 +1,23 @@
 const video = document.getElementById('video');
-const player = new shaka.Player(video);
 
-// Configure DRM (ClearKey)
+// تهيئة DASH Player
+const player = dashjs.MediaPlayer().create();
+player.initialize(video);
+
+// تهيئة DRM باستخدام ClearKey
 const clearkeyConfig = {
-    clearkey: {
-        keyId: 'b253c726c24c7c94a3ddf9b1907e2c76', // Replace with your key ID
-        key: '097963d6ad73c3d712a104981de0ed42'       // Replace with your key
+    "org.w3.clearkey": {
+        "clearkeys": {
+            "b253c726c24c7c94a3ddf9b1907e2c76": "097963d6ad73c3d712a104981de0ed42" // استبدل بـ Key ID و Key الخاصين بك
+        }
     }
 };
 
-player.configure({
-    drm: clearkeyConfig,
-    drm: {
-        robustness: 'SW_SECURE_CRYPTO' // Set robustness level
-    }
-});
+player.setProtectionData(clearkeyConfig);
 
-// Load the video
-async function loadVideo(url) {
-    try {
-        await player.load(url);
-        console.log('Video loaded successfully');
-    } catch (error) {
-        console.error('Error loading video:', error);
-    }
-}
-
-// Example usage
-const videoUrl = 'https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd'; // Replace with your video URL
-loadVideo(videoUrl);
+// تحميل الفيديو
+const videoUrl = 'https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd'; // استبدل برابط الفيديو الخاص بك
+player.attachSource(videoUrl);
 
 // --------------------------
 // باقي أكواد التحكم في الفيديو
