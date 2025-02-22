@@ -14,11 +14,10 @@
 	<script>
 	document.addEventListener("DOMContentLoaded", () => {
     const video = document.querySelector("video");
-    const playButton = document.getElementById("playButton");
     const controls = document.querySelector(".controls");
 
-    if (!video || !playButton || !controls) {
-        console.error("Video, playButton, or controls element not found!");
+    if (!video || !controls) {
+        console.error("Video or controls element not found!");
         return;
     }
 
@@ -81,14 +80,6 @@
         }
     }
 
-    playButton.addEventListener("click", () => {
-        if (video.paused) {
-            video.play();
-        } else {
-            video.pause();
-        }
-    });
-
     function toggleMainState(e) {
         e.stopPropagation();
         if (!e.composedPath().includes(controls)) {
@@ -102,7 +93,7 @@
 
     video.addEventListener("click", toggleMainState);
 });
-</script>
+        </script>
 </head>
 <body>
     <div class="video-container">
