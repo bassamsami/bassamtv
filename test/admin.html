@@ -10,13 +10,15 @@
 <body>
     <main>
         <!-- أزرار التحكم -->
-        <div class="control-buttons">
-            <button onclick="showPage('add-group')">إضافة مجموعة</button>
-            <button onclick="showPage('add-channel')">إضافة قناة</button>
-            <button onclick="showPage('view-groups')">عرض المجموعات</button>
-            <button onclick="showPage('add-match')">إضافة مباراة</button>
-            <button onclick="showPage('view-matches')">عرض المباريات</button>
-        </div>
+        <!-- أزرار التحكم -->
+<div class="control-buttons">
+    <button onclick="showPage('add-group')">إضافة مجموعة</button>
+    <button onclick="showPage('add-channel')">إضافة قناة</button>
+    <button onclick="showPage('view-groups')">عرض المجموعات</button>
+    <button onclick="showPage('add-match')">إضافة مباراة</button>
+    <button onclick="showPage('view-matches')">عرض المباريات</button>
+    <button onclick="showPage('update-variables')">تحديث المتغيرات</button> <!-- الزر الجديد -->
+</div>
 
         <!-- صفحة إضافة المجموعات -->
         <section id="add-group" class="page">
@@ -28,18 +30,28 @@
 
         <!-- صفحة إضافة القنوات -->
         <section id="add-channel" class="page" style="display: none;">
-            <h2>إضافة/تعديل قناة</h2>
-            <input type="text" id="channel-name" placeholder="اسم القناة">
-            <input type="text" id="channel-url" placeholder="رابط القناة">
-            <input type="text" id="channel-image" placeholder="رابط صورة القناة">
-            <input type="text" id="channel-key" placeholder="Key ID:Key (اختياري)">
-            <select id="channel-group">
-                <!-- المجموعات سيتم إضافتها هنا عبر JavaScript -->
-            </select>
-            <button id="add-channel-btn">إضافة قناة</button>
-            <button id="edit-channel-btn" style="display: none;">تعديل القناة</button>
-            <button class="back-button" onclick="showPage('view-groups')">رجوع</button>
-        </section>
+    <h2>إضافة/تعديل قناة</h2>
+    <input type="text" id="channel-name" placeholder="اسم القناة">
+    <input type="text" id="channel-url" placeholder="رابط القناة (PHP & Worker)">
+    <input type="text" id="channel-image" placeholder="رابط صورة القناة">
+    <input type="text" id="channel-key" placeholder="Key ID:Key (اختياري)">
+    <select id="channel-group">
+        <!-- المجموعات سيتم إضافتها هنا عبر JavaScript -->
+    </select>
+    <button id="add-channel-btn">إضافة قناة</button>
+    <button id="edit-channel-btn" style="display: none;">تعديل القناة</button>
+    <button class="back-button" onclick="showPage('view-groups')">رجوع</button>
+</section>
+
+<!-- قسم تحديث الروابط -->
+<section id="update-variables" class="page" style="display: none;">
+    <h2>تحديث المتغيرات</h2>
+    <div class="update-variables-container">
+        <input type="text" id="new-url" placeholder="أدخل الرابط الجديد هنا">
+        <button id="save-new-url-btn">حفظ</button>
+        <button class="back-button" onclick="showPage('control-buttons')">رجوع</button>
+    </div>
+</section>
 
         <!-- صفحة عرض المجموعات -->
         <section id="view-groups" class="page">
@@ -70,7 +82,7 @@
     <input type="datetime-local" id="match-time" placeholder="موعد المباراة">
     <input type="text" id="match-league" placeholder="الدوري">
     <input type="text" id="commentator" placeholder="اسم المعلق">
-    <input type="text" id="match-channel-url" placeholder="رابط القناة (مطلوب)">
+    <input type="text" id="match-channel-url" placeholder="رابط القناة (PHP & Worker)">
     <input type="text" id="match-channel-key" placeholder="Key ID:Key (اختياري)">
     <button id="add-match-btn">إضافة مباراة</button>
     <button class="back-button" onclick="showPage('view-matches')">رجوع</button>

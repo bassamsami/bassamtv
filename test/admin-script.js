@@ -193,27 +193,17 @@ function deleteGroup(groupId) {
 
 document.getElementById("add-channel-btn").addEventListener("click", async () => {
     const channelName = document.getElementById("channel-name").value;
-    const channelUrl = document.getElementById("channel-url").value;
+    const channelUrl = document.getElementById("channel-url").value; // رابط القناة (PHP & Worker)
     const channelImage = document.getElementById("channel-image").value;
     const channelKey = document.getElementById("channel-key").value;
     const channelGroup = document.getElementById("channel-group").value;
 
     if (channelName && channelUrl && channelImage && channelGroup) {
-        let finalChannelUrl = channelUrl;
-        let finalChannelKey = channelKey;
-
-        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
-        if (channelUrl.endsWith('.php')) {
-            const { manifestUri, clearkeys } = await fetchManifestAndKeys(channelUrl);
-            if (manifestUri) finalChannelUrl = manifestUri;
-            if (clearkeys) finalChannelKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
-        }
-
         db.collection("channels").add({
             name: channelName,
-            url: finalChannelUrl,
+            url: channelUrl, // تخزين الرابطين معًا
             image: channelImage,
-            key: finalChannelKey || "",
+            key: channelKey || "",
             group: channelGroup,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
@@ -287,21 +277,11 @@ document.getElementById("add-match-btn").addEventListener("click", async () => {
     const matchTime = document.getElementById("match-time").value;
     const matchLeague = document.getElementById("match-league").value;
     const commentator = document.getElementById("commentator").value;
-    const channelUrl = document.getElementById("match-channel-url").value;
+    const channelUrl = document.getElementById("match-channel-url").value; // رابط القناة (PHP & Worker)
     const channelKey = document.getElementById("match-channel-key").value;
 
     if (team1 && team2 && team1Image && team2Image && matchTime && matchLeague && commentator && channelUrl) {
         const matchTimeUTC = new Date(matchTime).toISOString();
-
-        let finalChannelUrl = channelUrl;
-        let finalChannelKey = channelKey;
-
-        // إذا كان الرابط ينتهي بـ .php، جلب البيانات منه
-        if (channelUrl.endsWith('.php')) {
-            const { manifestUri, clearkeys } = await fetchManifestAndKeys(channelUrl);
-            if (manifestUri) finalChannelUrl = manifestUri;
-            if (clearkeys) finalChannelKey = formatClearkeys(clearkeys); // تحويل clearkeys إلى التنسيق المطلوب
-        }
 
         db.collection("matches").add({
             team1: team1,
@@ -311,8 +291,8 @@ document.getElementById("add-match-btn").addEventListener("click", async () => {
             matchTime: matchTimeUTC,
             matchLeague: matchLeague,
             commentator: commentator,
-            channelUrl: finalChannelUrl,
-            key: finalChannelKey || "",
+            channelUrl: channelUrl, // تخزين الرابطين معًا
+            key: channelKey || "",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             alert("تمت إضافة المباراة بنجاح");
@@ -325,6 +305,7 @@ document.getElementById("add-match-btn").addEventListener("click", async () => {
         alert("يرجى ملء جميع الحقول المطلوبة");
     }
 });
+
 function loadMatches() {
     const matchesGrid = document.getElementById("matches-grid");
     if (matchesGrid) {
@@ -432,3 +413,154 @@ function deleteMatch(matchId) {
             });
     }
 }
+// دالة لتحديث الروابط بناءً على رابط جديد
+let latestUrl = null; // متغير لتخزين الرابط الجديد
+
+// دالة لسحب الرابط الجديد من ملف PHP
+async function fetchNewUrlFromPHP(phpUrl) {
+    try {
+        const response = await fetch(phpUrl, {
+            mode: 'no-cors' // استخدام وضع no-cors لتجاوز مشكلة CORS
+        });
+
+        // في وضع no-cors، لا يمكنك قراءة الاستجابة مباشرة
+        // لذا سنفترض أن الرابط يعمل بشكل صحيح
+        if (!response.ok) {
+            throw new Error("فشل جلب البيانات من الخادم.");
+        }
+
+        // محاولة قراءة النص (قد لا تعمل في وضع no-cors)
+        const text = await response.text();
+        return text;
+    } catch (error) {
+        console.error("حدث خطأ أثناء جلب الرابط من ملف PHP:", error);
+        throw error;
+    }
+}
+
+// دالة لتحديث الروابط بناءً على رابط جديد
+async function updateLinksWithNewUrl(newUrl, isManualUpdate = false) {
+    try {
+        let fetchedUrl = newUrl;
+
+        // إذا لم يكن التحديث يدويًا، سحب الرابط من ملف PHP
+        if (!isManualUpdate) {
+            const phpUrl = "https://akomov.com/tod/todapp.php?id=1";
+            fetchedUrl = await fetchNewUrlFromPHP(phpUrl);
+        }
+
+        // استخراج القيم الجديدة من الرابط
+        const stMatch = fetchedUrl.match(/st=(\d+)/);
+        const expMatch = fetchedUrl.match(/exp=(\d+)/);
+        const dataMatch = fetchedUrl.match(/data=([a-f0-9-]+)/);
+        const hmacMatch = fetchedUrl.match(/hmac=([a-f0-9]+)/);
+
+        if (stMatch && expMatch && dataMatch && hmacMatch) {
+            const newSt = stMatch[1];
+            const newExp = expMatch[1];
+            const newData = dataMatch[1];
+            const newHmac = hmacMatch[1];
+
+            // تحديث روابط القنوات
+            await updateCollectionLinks("channels", newSt, newExp, newData, newHmac, isManualUpdate);
+
+            // تحديث روابط المباريات
+            await updateCollectionLinks("matches", newSt, newExp, newData, newHmac, isManualUpdate);
+
+            alert("تم تحديث جميع الروابط بنجاح!");
+        } else {
+            alert("الرابط المسحوب لا يحتوي على جميع القيم المطلوبة (st, exp, data, hmac).");
+        }
+    } catch (error) {
+        console.error("حدث خطأ أثناء تحديث الروابط:", error);
+        alert("حدث خطأ أثناء تحديث الروابط: " + error.message);
+    }
+}
+
+// دالة لتحديث الروابط في مجموعة معينة (قنوات أو مباريات)
+async function updateCollectionLinks(collectionName, newSt, newExp, newData, newHmac, isManualUpdate) {
+    try {
+        // جلب جميع الوثائق من المجموعة
+        const snapshot = await db.collection(collectionName).get();
+
+        // تحديث كل وثيقة
+        snapshot.forEach(async (doc) => {
+            const data = doc.data();
+            const oldUrl = data.url; // الرابط القديم
+
+            // تحديد نوع التحديث بناءً على isManualUpdate
+            if (isManualUpdate) {
+                // التحديث اليدوي: تحديث الروابط التي تحتوي على `acl=/variant/v1blackout/spo-hd-38-d-shortdvr/*`
+                if (oldUrl && oldUrl.includes("acl=/variant/v1blackout/spo-hd-38-d-shortdvr/*")) {
+                    updateUrl(doc, collectionName, oldUrl, newSt, newExp, newData, newHmac, data);
+                }
+            } else {
+                // التحديث التلقائي: تحديث الروابط التي تحتوي على `acl=/Content/*`
+                if (oldUrl && oldUrl.includes("acl=/Content/*")) {
+                    updateUrl(doc, collectionName, oldUrl, newSt, newExp, newData, newHmac, data);
+                }
+            }
+        });
+    } catch (error) {
+        console.error(`حدث خطأ أثناء تحديث الروابط في ${collectionName}:`, error);
+        throw error;
+    }
+}
+
+// دالة مساعدة لتحديث الرابط
+async function updateUrl(doc, collectionName, oldUrl, newSt, newExp, newData, newHmac, data) {
+    // استخراج القيم القديمة من الرابط القديم
+    const oldStMatch = oldUrl.match(/st=(\d+)/);
+    const oldExpMatch = oldUrl.match(/exp=(\d+)/);
+    const oldDataMatch = oldUrl.match(/data=([a-f0-9-]+)/);
+    const oldHmacMatch = oldUrl.match(/hmac=([a-f0-9]+)/);
+
+    if (oldStMatch && oldExpMatch && oldDataMatch && oldHmacMatch) {
+        const oldSt = oldStMatch[1];
+        const oldExp = oldExpMatch[1];
+        const oldData = oldDataMatch[1];
+        const oldHmac = oldHmacMatch[1];
+
+        // استبدال القيم القديمة بالقيم الجديدة
+        const updatedUrl = oldUrl
+            .replace(`st=${oldSt}`, `st=${newSt}`)
+            .replace(`exp=${oldExp}`, `exp=${newExp}`)
+            .replace(`data=${oldData}`, `data=${newData}`)
+            .replace(`hmac=${oldHmac}`, `hmac=${newHmac}`);
+
+        // تحديث الرابط في Firestore
+        await db.collection(collectionName).doc(doc.id).update({ url: updatedUrl });
+        console.log(`تم تحديث الرابط في ${collectionName}: ${data.name || data.team1}`);
+    }
+}
+
+// دالة لتحديث المتغيرات تلقائيًا كل نصف ساعة
+function autoUpdateVariables() {
+    setInterval(async () => {
+        try {
+            if (latestUrl) {
+                // تحديث الروابط باستخدام الرابط المخزن (تحديث تلقائي)
+                await updateLinksWithNewUrl(latestUrl, false);
+                console.log("تم تحديث الروابط تلقائيًا.");
+            } else {
+                console.log("لا يوجد رابط جديد لتحديث الروابط.");
+            }
+        } catch (error) {
+            console.error("حدث خطأ أثناء التحديث التلقائي:", error);
+        }
+    }, 1800000); // نصف ساعة = 1800000 مللي ثانية
+}
+
+// بدء التحديث التلقائي
+autoUpdateVariables();
+
+// إضافة حدث لزر الحفظ (تحديث يدوي)
+document.getElementById("save-new-url-btn").addEventListener("click", () => {
+    const newUrl = document.getElementById("new-url").value;
+    if (newUrl) {
+        latestUrl = newUrl; // تخزين الرابط الجديد
+        updateLinksWithNewUrl(newUrl, true); // تحديث يدوي
+    } else {
+        alert("يرجى إدخال رابط جديد.");
+    }
+});
