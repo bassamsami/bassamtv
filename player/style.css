@@ -18,6 +18,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto; /* توسيط الحاوية */
 }
 
 .video-container video {
@@ -95,7 +96,8 @@ body {
 .controls {
     position: absolute;
     bottom: 0;
-    left: 0;
+    left: 50%; /* توسيط الأفقي */
+    transform: translateX(-50%); /* توسيط الأفقي */
     padding: 5rem 1rem 0.5rem 1rem;
     width: 100%;
     background: linear-gradient(to top, #000000b8 -100%, transparent);
@@ -198,7 +200,8 @@ body {
     font-size: 1.2rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center; /* توسيط الأزرار */
+    gap: 10px; /* مسافة بين الأزرار */
 }
 
 .btn-con {
