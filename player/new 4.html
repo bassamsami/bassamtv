@@ -4,96 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.4.0/dash.all.min.js"></script>
     <script src="script.js" defer></script>
-   
-	<script>
-	document.addEventListener("DOMContentLoaded", () => {
-    const video = document.querySelector("video");
-    const controls = document.querySelector(".controls");
-
-    if (!video || !controls) {
-        console.error("Video or controls element not found!");
-        return;
-    }
-
-    console.log("Video element:", video);
-
-    // إضافة رابط البث
-    const videoSrc = "https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd"; // رابط البث
-
-    console.log("Starting video playback...");
-    console.log("Video Source:", videoSrc);
-
-    // تحديد نوع التنسيق تلقائيًا
-    function getVideoType(src) {
-        if (src.endsWith(".mpd")) {
-            return "application/dash+xml";
-        } else if (src.endsWith(".m3u8")) {
-            return "application/vnd.apple.mpegurl";
-        } else if (src.endsWith(".mp4")) {
-            return "video/mp4";
-        }
-        return null;
-    }
-
-    const videoType = getVideoType(videoSrc);
-    console.log("Video Type:", videoType);
-
-    if (videoType) {
-        playVideo(videoSrc, videoType);
-    } else {
-        console.error("Unsupported video format");
-    }
-
-    function playVideo(src, type) {
-        if (type === "application/dash+xml") {
-            console.log("Initializing Dash.js...");
-            const player = dashjs.MediaPlayer().create();
-            player.initialize(video, src, true);
-        } else if (type === "application/vnd.apple.mpegurl") {
-            if (Hls.isSupported()) {
-                console.log("Initializing Hls.js...");
-                const hls = new Hls();
-                hls.loadSource(src);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                    console.log("Manifest parsed, starting playback...");
-                    video.play();
-                });
-            } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-                console.log("Using native HLS support...");
-                video.src = src;
-                video.addEventListener("loadedmetadata", function () {
-                    console.log("Video metadata loaded, starting playback...");
-                    video.play();
-                });
-            }
-        } else if (type === "video/mp4") {
-            console.log("Playing MP4 video...");
-            video.src = src;
-            video.play();
-        }
-    }
-
-    function toggleMainState(e) {
-        e.stopPropagation();
-        if (!e.composedPath().includes(controls)) {
-            if (video.paused) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        }
-    }
-
-    video.addEventListener("click", toggleMainState);
-});
-        </script>
 </head>
 <body>
     <div class="video-container">
@@ -186,5 +102,125 @@
             </div>
         </div>
     </div>
+	<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const video = document.querySelector("video");
+    const controls = document.querySelector(".controls");
+
+    if (!video || !controls) {
+        console.error("Video or controls element not found!");
+        return;
+    }
+
+    console.log("Video element:", video);
+
+    // إضافة رابط البث والمفتاح
+    const videoSrc = "https://sps1.starzplayarabia.com/out/v1/41ff8fde1cd84ed5b30ab8198755356b/index.mpd"; // رابط البث
+    const keyId = "b253c726c24c7c94a3ddf9b1907e2c76"; // Key ID
+    const key = "097963d6ad73c3d712a104981de0ed42"; // Key
+
+    console.log("Starting video playback...");
+    console.log("Video Source:", videoSrc);
+
+    // تحديد نوع التنسيق تلقائيًا
+    function getVideoType(src) {
+        if (src.endsWith(".mpd")) {
+            return "application/dash+xml";
+        } else if (src.endsWith(".m3u8")) {
+            return "application/vnd.apple.mpegurl";
+        } else if (src.endsWith(".mp4")) {
+            return "video/mp4";
+        }
+        return null;
+    }
+
+    const videoType = getVideoType(videoSrc);
+    console.log("Video Type:", videoType);
+
+    if (videoType) {
+        playVideo(videoSrc, videoType);
+    } else {
+        console.error("Unsupported video format");
+    }
+
+    if (keyId && key) {
+        console.log("Setting up DRM...");
+        setupDRM(video, keyId, key);
+    }
+
+    function playVideo(src, type) {
+        if (type === "application/dash+xml") {
+            console.log("Initializing Dash.js...");
+            const player = dashjs.MediaPlayer().create();
+            player.initialize(video, src, true);
+        } else if (type === "application/vnd.apple.mpegurl") {
+            if (Hls.isSupported()) {
+                console.log("Initializing Hls.js...");
+                const hls = new Hls();
+                hls.loadSource(src);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    console.log("Manifest parsed, starting playback...");
+                    video.play();
+                });
+            } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                console.log("Using native HLS support...");
+                video.src = src;
+                video.addEventListener("loadedmetadata", function () {
+                    console.log("Video metadata loaded, starting playback...");
+                    video.play();
+                });
+            }
+        } else if (type === "video/mp4") {
+            console.log("Playing MP4 video...");
+            video.src = src;
+            video.play();
+        }
+    }
+
+    function setupDRM(video, keyId, key) {
+        const config = [{
+            initDataTypes: ['cenc'],
+            audioCapabilities: [{ contentType: 'audio/mp4; codecs="mp4a.40.2"' }],
+            videoCapabilities: [{ contentType: 'video/mp4; codecs="avc1.64001e"' }]
+        }];
+
+        navigator.requestMediaKeySystemAccess('org.w3.clearkey', config).then(function (access) {
+            console.log("DRM access granted");
+            return access.createMediaKeys();
+        }).then(function (mediaKeys) {
+            console.log("MediaKeys created");
+            video.setMediaKeys(mediaKeys);
+            const session = mediaKeys.createSession();
+            const keyObj = {
+                kty: "oct",
+                kid: keyId,
+                k: key
+            };
+            const keyMessage = new TextEncoder().encode(JSON.stringify({
+                keys: [keyObj],
+                type: "temporary"
+            }));
+            session.update(keyMessage);
+        }).catch(function (error) {
+            console.error("DRM setup failed:", error);
+        });
+    }
+
+    function toggleMainState(e) {
+        e.stopPropagation();
+        const path = e.composedPath();
+        if (path && !path.includes(controls)) {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+    }
+
+    video.addEventListener("click", toggleMainState);
+});
+	</script>
 </body>
 </html>
