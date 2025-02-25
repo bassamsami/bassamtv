@@ -36,13 +36,31 @@ return hex;
 }
 
 function jsonToHex(json) {
-const keys = json.keys;
-const hexKeys = keys.map(key => {
-    const kid = base64ToHex(key.kid); // Convert kid from Base64 to Hex
-    const k = base64ToHex(key.k); // Convert k from Base64 to Hex
-    return { kid, k };
-});
-return hexKeys;
+try {
+    // التحقق من أن json هو كائن صالح
+    if (typeof json !== 'object' || json === null) {
+        throw new Error("Invalid JSON format");
+    }
+
+    const keys = json.keys;
+    if (!Array.isArray(keys)) {
+        throw new Error("Invalid keys format in JSON");
+    }
+
+    const hexKeys = keys.map(key => {
+        if (!key.kid || !key.k) {
+            throw new Error("Missing 'kid' or 'k' in JSON key");
+        }
+        const kid = base64ToHex(key.kid); // Convert kid from Base64 to Hex
+        const k = base64ToHex(key.k); // Convert k from Base64 to Hex
+        return { kid, k };
+    });
+
+    return hexKeys;
+} catch (error) {
+    console.error("Error parsing JSON:", error);
+    return null;
+}
 }
 
 const clearkeyJson = {
@@ -54,6 +72,12 @@ const clearkeyJson = {
 };
 
 const clearkeyHex = jsonToHex(clearkeyJson);
+
+if (!clearkeyHex) {
+console.error("Failed to convert JSON to HEX");
+} else {
+console.log("Clearkey HEX:", clearkeyHex);
+}
 
 // تهيئة المشغل بعد تحميل JW Player
 function initPlayer() {
