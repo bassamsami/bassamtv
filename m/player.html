@@ -15,6 +15,7 @@ jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
 </script>
 </head>
 <body>
+<div id="player"></div> <!-- تأكد من وجود هذا العنصر -->
 <script type="text/javascript">
 function getParameterByName(name) {
 name = name.replace(/[\[]/, "\[").replace(/[\]]/, "\]");
@@ -56,28 +57,45 @@ const clearkeyHex = jsonToHex(clearkeyJson);
 
 // تهيئة المشغل بعد تحميل JW Player
 function initPlayer() {
+// التحقق من وجود العنصر div#player
+if (!document.getElementById("player")) {
+    console.error("Element with id 'player' not found!");
+    return;
+}
+
+// التحقق من أن jwplayer تم تحميله بشكل صحيح
+if (typeof jwplayer === "undefined" || !jwplayer) {
+    console.error("JW Player is not loaded!");
+    return;
+}
+
+// تهيئة المشغل
 var playerInstance = jwplayer("player");
 
-playerInstance.setup({
-    playlist: [{
-        "sources": [
-        {
-            "default": false,
-            "type": "dash",
-            "file": "https://api-proxad.dc2.oqee.net/playlist/v1/live/966/1/live.mpd",
-            "drm": {
-            "clearkey": clearkeyHex
-            },
-            "label": "0"
-        }
-        ]
-    }],
-    width: "100%",
-    height: "100%",
-    autostart: true,
-    cast: {},
-    sharing: false
-});
+if (playerInstance && typeof playerInstance.setup === "function") {
+    playerInstance.setup({
+        playlist: [{
+            "sources": [
+            {
+                "default": false,
+                "type": "dash",
+                "file": "https://api-proxad.dc2.oqee.net/playlist/v1/live/966/1/live.mpd",
+                "drm": {
+                "clearkey": clearkeyHex
+                },
+                "label": "0"
+            }
+            ]
+        }],
+        width: "100%",
+        height: "100%",
+        autostart: true,
+        cast: {},
+        sharing: false
+    });
+} else {
+    console.error("JW Player setup is not available!");
+}
 }
 
 // تأكد من تحميل JW Player قبل استدعاء initPlayer
@@ -89,6 +107,5 @@ window.onload = function() {
 };
 }
 </script>
-<div id="player"></div>
 </body>
 </html>
