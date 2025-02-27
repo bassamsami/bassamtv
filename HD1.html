@@ -1,0 +1,57 @@
+<html lang="ar">
+<head>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<style type="text/css">
+body {
+margin: 0;
+padding: 0;
+}
+</style>
+<script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
+<script>
+jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
+</script>
+</head>
+<body>
+<script type="text/javascript">
+function getParameterByName(name) {
+name = name.replace(/[\[]/, "\[").replace(/[\]]/, "\]");
+var regex = new RegExp("[\?&]" + name + "=([^&#]*)"),
+results = regex.exec(location.search);
+return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var get = getParameterByName('get');
+var key = getParameterByName('key');
+var key2 = getParameterByName('key2');
+var getIMG = getParameterByName('img');
+</script>
+<div id="player"></div>
+<script type="text/javascript">
+var playerInstance = jwplayer("player");
+
+playerInstance.setup({
+    playlist: [{
+        "sources": [
+            {
+                "default": false,
+                "type": "dash",
+                "file": "https://bassamsami.github.io/bassamtv/proxy.php/?url=https://live-d-01-todtv-da.akamaized.net/variant/v1blackout/spo-hd-38-d-shortdvr/DASH_DASH/Live/channel(spo-hd-38)/manifest.mpd?hdnts=st=1740676376~exp=1740690776~acl=/variant/v1blackout/spo-hd-38-d-shortdvr/*~id=9f3c138c-d8a3-4e74-ae7d-320667c90e73~data=5d268cba-17cd-497c-aa0b-1f7d796716e1~hmac=7c5b9bc905daa7f2e74042277849bf95327c2de46c9481e92409e57e0df23941&hdcore=2.11.3",
+                "drm": {
+                    "clearkey": { 
+                        "keyId": "0a7934dddc3136a6922584b96c3fd1e5", 
+                        "key": "676e6d1dd00bfbe266003efaf0e3aa02" 
+                    }
+                },
+                "label": "0"
+            }
+        ]
+    }],
+    width: "100%",
+    height: "100%",
+    autostart: true,
+    cast: {},
+    sharing: false
+});
+</script>
