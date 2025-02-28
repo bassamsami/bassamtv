@@ -1,66 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // وظيفة لتطبيق object-fit: cover على الفيديو
-function applyObjectFit() {
-    const videoElement = document.querySelector('#player video');
-    if (videoElement) {
-        videoElement.style.objectFit = 'cover'; // ملء الحاوية مع الاقتصاص
-        videoElement.style.width = '100%'; // إجبار العرض على 100%
-        videoElement.style.height = '100%'; // إجبار الارتفاع على 100%
-    }
-}
-
-// مراقبة التغييرات على عنصر الفيديو
-function observeVideoElement() {
-    const targetNode = document.querySelector('#player');
-    if (targetNode) {
-        const observer = new MutationObserver(function(mutationsList) {
-            for (let mutation of mutationsList) {
-                if (mutation.type === 'childList' || mutation.type === 'attributes') {
-                    applyObjectFit(); // إعادة تطبيق object-fit عند أي تغيير
-                }
-            }
-        });
-
-        // بدء المراقبة
-        observer.observe(targetNode, { 
-            childList: true, // مراقبة التغييرات في العناصر الفرعية
-            attributes: true // مراقبة التغييرات في السمات
-        });
-    }
-}
-
-// تطبيق object-fit عند تحميل المشغل
-playerInstance.on('ready', function() {
-    applyObjectFit(); // التطبيق الأولي
-    observeVideoElement(); // بدء مراقبة التغييرات
-});
-
-// إعادة تطبيق object-fit عند تغيير حجم النافذة
-window.addEventListener('resize', function() {
-    applyObjectFit();
-});
-
-// إعادة تطبيق object-fit كل ثانية كـ backup
-setInterval(function() {
-    applyObjectFit();
-}, 1000);
-
-// مراقبة أحداث الشاشة الكاملة
-document.addEventListener('fullscreenchange', function() {
-    applyObjectFit(); // تطبيق object-fit عند الدخول أو الخروج من الشاشة الكاملة
-});
-
-document.addEventListener('webkitfullscreenchange', function() {
-    applyObjectFit(); // للتأكد من التوافق مع متصفحات WebKit (مثل Safari)
-});
-
-document.addEventListener('mozfullscreenchange', function() {
-    applyObjectFit(); // للتأكد من التوافق مع Firefox
-});
-
-document.addEventListener('MSFullscreenChange', function() {
-    applyObjectFit(); // للتأكد من التوافق مع Internet Explorer
-});
     const themeToggle = document.getElementById("theme-toggle");
     const channelsList = document.getElementById("channels-list");
     const searchInput = document.getElementById("search-input");
@@ -73,8 +11,6 @@ document.addEventListener('MSFullscreenChange', function() {
     const closeSidebar = document.getElementById("close-sidebar");
     const matchesDialog = document.getElementById("matches-dialog");
     const closeMatchesDialog = document.getElementById("close-matches-dialog");
-    const errorDialog = document.getElementById("error-dialog");
-    const closeErrorDialog = document.getElementById("close-error-dialog");
 
     // إخفاء القائمة عند النقر خارجها
     document.addEventListener("click", (event) => {
@@ -132,240 +68,123 @@ document.addEventListener('MSFullscreenChange', function() {
         });
     }
 
-    // إظهار ديالوج الخطأ
-    function showErrorDialog(message) {
-        const errorMessage = document.getElementById("error-message");
-        errorMessage.textContent = message;
-        errorDialog.style.display = "block";
-    }
-
-    // إغلاق ديالوج الخطأ
-    closeErrorDialog.addEventListener("click", () => {
-        errorDialog.style.display = "none";
-    });
-
-    // دالة لجلب manifestUri و clearkeys من ملف PHP
-    async function playChannel(url, key) {
-    if (!url) {
-        console.error("رابط القناة غير موجود!");
-        showErrorDialog("رابط القناة غير موجود!");
-        return;
-    }
-
-    let finalUrl = url;
-    let finalKey = key;
-
-    // إذا كان الرابط يحتوي على رابطين (PHP & Worker)
-    const urls = url.split('&').map(u => u.trim()); // فصل الرابطين
-
-    // المفاتيح الثابتة
-    const staticKeyid = "0a7934dddc3136a6922584b96c3fd1e5";
-    const staticKey = "676e6d1dd00bfbe266003efaf0e3aa02";
-    const staticKeyCombined = `${staticKeyid}:${staticKey}`;
-
-    // دالة لسحب الرابط من PHP
-    async function fetchFromPHP(phpUrl) {
+    // دالة لجلب رابط البث المباشر من YouTube
+    async function fetchFromYouTube(youtubeUrl) {
         try {
-            const response = await fetch(phpUrl);
+            const response = await fetch(youtubeUrl);
             const text = await response.text();
 
-            // البحث عن الوسم manifestUri = "
-            const manifestUriMatch = text.match(/manifestUri\s*=\s*["']([^"']+)["']/);
-            if (manifestUriMatch && manifestUriMatch[1]) {
-                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
-                return {
-                    url: manifestUriMatch[1],
-                    key: staticKeyCombined // استخدام المفاتيح الثابتة
-                };
-            }
-
-            // البحث عن الوسم file: "
-            const fileMatch = text.match(/file:\s*["']([^"']+)["']/);
-            if (fileMatch && fileMatch[1]) {
-                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
-                return {
-                    url: fileMatch[1],
-                    key: staticKeyCombined // استخدام المفاتيح الثابتة
-                };
+            // البحث عن رابط البث المباشر (Live Stream) باستخدام hlsManifestUrl
+            const hlsManifestUrlMatch = text.match(/"hlsManifestUrl":"([^"]+)"/);
+            if (hlsManifestUrlMatch && hlsManifestUrlMatch[1]) {
+                const hlsManifestUrl = hlsManifestUrlMatch[1].replace(/\\\//g, '/'); // إصلاح الرابط
+                return hlsManifestUrl;
+            } else {
+                console.error("لم يتم العثور على رابط البث المباشر في صفحة YouTube.");
+                return null;
             }
         } catch (error) {
-            console.error(`حدث خطأ أثناء جلب البيانات من الرابط: ${phpUrl}`, error);
+            console.error(`حدث خطأ أثناء جلب البيانات من الرابط: ${youtubeUrl}`, error);
+            return null;
         }
-        return null;
     }
 
-    // دالة لسحب الرابط من Worker
-    async function fetchFromWorker(workerUrl) {
-        try {
-            const response = await fetch(workerUrl);
-            const data = await response.json();
-
-            // استخدام stream_url إذا كان موجودًا
-            if (data.stream_url) {
-                console.log("تم استخدام المفاتيح الثابتة:", staticKeyCombined);
-                return {
-                    url: data.stream_url,
-                    key: staticKeyCombined // استخدام المفاتيح الثابتة
-                };
-            }
-        } catch (error) {
-            console.error(`حدث خطأ أثناء جلب البيانات من الرابط: ${workerUrl}`, error);
-        }
-        return null;
-    }
-
-    // إذا كان الرابط يحتوي على رابطين (PHP & Worker)، نقوم بجلب البيانات
-    if (urls.length > 1) {
-        const [phpUrl, workerUrl] = urls;
-
-        // جرب سحب الرابطين في نفس الوقت
-        const [phpResult, workerResult] = await Promise.all([
-            fetchFromPHP(phpUrl),
-            fetchFromWorker(workerUrl)
-        ]);
-
-        // استخدام الرابط الذي يعمل أولاً
-        if (phpResult) {
-            finalUrl = phpResult.url;
-            finalKey = phpResult.key;
-            console.log("تم سحب الرابط من PHP:", finalUrl);
-        } else if (workerResult) {
-            finalUrl = workerResult.url;
-            finalKey = workerResult.key;
-            console.log("تم سحب الرابط من Worker:", finalUrl);
-        } else {
-            // إذا فشل الرابطان
-            console.error("لم يتم سحب أي رابط يعمل.");
-            showErrorDialog("لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.");
+    // دالة لتشغيل القناة
+    async function playChannel(url, key) {
+        if (!url) {
+            console.error("الرابط غير موجود!");
             return;
         }
-    } else {
-        // إذا كان الرابط مباشرًا (مثل mpd أو m3u8)، نستخدمه مباشرة
-        finalUrl = url;
-        console.log("تم استخدام الرابط المباشر:", finalUrl);
-    }
 
-    // إذا تمت إضافة مفتاح جديد يدويًا (بالطريقة التقليدية)، استخدامه بدلاً من المفاتيح الثابتة
-    if (key) {
-        finalKey = key; // استخدام المفتاح الجديد
-        console.log("تم استخدام المفتاح الجديد:", finalKey);
-    }
+        let finalUrl = url;
+        let streamType = getStreamType(url);
 
-    // تحويل التنسيق keyid:key إلى إعدادات DRM
-    const drmConfig = finalKey ? {
-        clearkey: {
-            keyId: finalKey.split(':')[0], // الجزء الأول هو keyid
-            key: finalKey.split(':')[1]   // الجزء الثاني هو key
-        },
-        robustness: 'SW_SECURE_CRYPTO' // إضافة robustness
-    } : null;
-
-    // تحديد نوع الملف بشكل صحيح
-    const streamType = getStreamType(finalUrl);
-
-    // إعداد المشغل
-    const playerInstance = jwplayer("player").setup({
-        playlist: [{
-            sources: [{
-                file: finalUrl,
-                type: streamType,
-                drm: drmConfig
-            }]
-        }],
-        width: "100%",
-        height: "100%",
-        autostart: true,
-        cast: {},
-        sharing: false
-    });
-
-    // إعداد الأحداث للمشغل
-    playerInstance.on('ready', () => {
-        console.log("المشغل جاهز للتشغيل!");
-    });
-
-    playerInstance.on('error', async (error) => {
-        console.error("حدث خطأ في المشغل:", error);
-
-        // إذا كان الرابط يحتوي على رابطين، جرب الرابط الآخر
-        if (urls.length > 1) {
-            const [phpUrl, workerUrl] = urls;
-
-            if (finalUrl === phpResult?.url) {
-                // إذا كان الرابط الأول هو الذي فشل، جرب الرابط الثاني
-                const workerResult = await fetchFromWorker(workerUrl);
-
-                if (workerResult) {
-                    finalUrl = workerResult.url;
-                    finalKey = workerResult.key;
-                    console.log("تم التبديل إلى الرابط من Worker:", finalUrl);
-
-                    // إعادة تحميل المشغل بالرابط الجديد
-                    playerInstance.load([{
-                        file: finalUrl,
-                        type: getStreamType(finalUrl),
-                        drm: drmConfig
-                    }]);
-                } else {
-                    showErrorDialog("لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.");
-                }
-            } else if (finalUrl === workerResult?.url) {
-                // إذا كان الرابط الثاني هو الذي فشل، جرب الرابط الأول
-                const phpResult = await fetchFromPHP(phpUrl);
-
-                if (phpResult) {
-                    finalUrl = phpResult.url;
-                    finalKey = phpResult.key;
-                    console.log("تم التبديل إلى الرابط من PHP:", finalUrl);
-
-                    // إعادة تحميل المشغل بالرابط الجديد
-                    playerInstance.load([{
-                        file: finalUrl,
-                        type: getStreamType(finalUrl),
-                        drm: drmConfig
-                    }]);
-                } else {
-                    showErrorDialog("لم يتم تحديث القناة حتى الآن، يرجى المحاولة لاحقًا.");
-                }
+        // إذا كان الرابط من YouTube، جلب رابط البث المباشر
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const youtubeStreamUrl = await fetchFromYouTube(url);
+            if (youtubeStreamUrl) {
+                finalUrl = youtubeStreamUrl;
+                streamType = getStreamType(youtubeStreamUrl);
+            } else {
+                console.error("لم يتم العثور على رابط البث المباشر من YouTube.");
+                return;
             }
-        } else {
-            showErrorDialog("حدث خطأ في تشغيل القناة. يرجى التحقق من الرابط والمفتاح.");
         }
-    });
 
-    playerInstance.on('setupError', (error) => {
-        console.error("حدث خطأ في إعداد المشغل:", error);
-        showErrorDialog("حدث خطأ في إعداد المشغل. يرجى التحقق من الرابط والمفتاح.");
-    });
-
-    // جعل المشغل يأخذ العرض الكامل عند التكبير
-    playerInstance.on('fullscreen', function(event) {
-        if (event.fullscreen) {
-            playerContainer.style.width = "100%";
-            playerContainer.style.height = "100%";
-        } else {
-            playerContainer.style.width = "100%";
-            playerContainer.style.height = "80vh";
+        // إذا لم يتم تحديد نوع الملف، لا نقوم بتشغيل الرابط
+        if (!streamType) {
+            console.error("نوع الملف غير مدعوم أو غير معروف:", finalUrl);
+            return;
         }
-    });
-}
 
-// دالة لتحديد نوع الملف تلقائيًا
-function getStreamType(url) {
-    if (url.includes(".m3u8")) {
-        return "hls";
-    } else if (url.includes(".mpd")) {
-        return "dash";
-    } else if (url.includes(".mp4") || url.includes(".m4v")) {
-        return "mp4";
-    } else if (url.includes(".ts") || url.includes(".mpegts")) {
-        return "mpegts";
-    } else if (url.includes(".php") || url.includes(".embed")) {
-        return "html5";
-    } else {
-        return "auto";
+        // تحويل التنسيق keyid:key إلى إعدادات DRM
+        const drmConfig = key ? {
+            clearkey: {
+                keyId: key.split(':')[0], // الجزء الأول هو keyid
+                key: key.split(':')[1]   // الجزء الثاني هو key
+            },
+            robustness: 'SW_SECURE_CRYPTO' // إضافة robustness
+        } : null;
+
+        // التأكد من وجود عنصر المشغل في DOM
+        const playerElement = document.getElementById("player");
+        if (!playerElement) {
+            console.error("عنصر المشغل غير موجود في الصفحة.");
+            return;
+        }
+
+        // إعداد المشغل
+        try {
+            const playerInstance = jwplayer("player").setup({
+                playlist: [{
+                    sources: [{
+                        file: finalUrl,
+                        type: streamType, // تحديد نوع الملف تلقائيًا
+                        drm: drmConfig
+                    }]
+                }],
+                width: "100%",
+                height: "100%",
+                autostart: true,
+                cast: {},
+                sharing: false
+            });
+
+            // إعداد الأحداث للمشغل
+            playerInstance.on('ready', () => {
+                console.log("المشغل جاهز للتشغيل");
+            });
+
+            playerInstance.on('error', (error) => {
+                console.error("حدث خطأ في المشغل:", error);
+                if (error.code === 246012) {
+                    console.error("السبب المحتمل: الرابط أو المفاتيح غير صحيحة.");
+                }
+            });
+
+            playerInstance.on('setupError', (error) => {
+                console.error("حدث خطأ في إعداد المشغل:", error);
+            });
+        } catch (error) {
+            console.error("حدث خطأ أثناء إعداد المشغل:", error);
+        }
     }
-}
+
+    // تحديد نوع الملف تلقائيًا
+    function getStreamType(url) {
+        if (url.includes(".m3u8")) {
+            return "hls"; // تنسيق HLS
+        } else if (url.includes(".mpd")) {
+            return "dash"; // تنسيق DASH
+        } else if (url.includes(".mp4") || url.includes(".m4v")) {
+            return "mp4"; // تنسيق MP4
+        } else if (url.includes(".ts") || url.includes(".mpegts")) {
+            return "mpegts"; // تنسيق MPEG-TS
+        } else {
+            return null; // نوع غير معروف
+        }
+    }
+
     // البحث عن القنوات
     searchInput.addEventListener("input", () => {
         const searchTerm = searchInput.value.toLowerCase();
