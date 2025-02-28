@@ -712,3 +712,20 @@ main {
         background: rgba(30, 30, 30, 0.95); /* تحسين خلفية الديالوج */
     }
 }
+/* تأكد من أن الفيديو يملأ الحاوية بالكامل */
+#player video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* تأكد من أن الحاوية بتاعة المشغل تملأ الشاشة بالكامل */
+#player-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
