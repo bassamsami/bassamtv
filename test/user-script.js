@@ -1,4 +1,66 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // وظيفة لتطبيق object-fit: cover على الفيديو
+function applyObjectFit() {
+    const videoElement = document.querySelector('#player video');
+    if (videoElement) {
+        videoElement.style.objectFit = 'cover'; // ملء الحاوية مع الاقتصاص
+        videoElement.style.width = '100%'; // إجبار العرض على 100%
+        videoElement.style.height = '100%'; // إجبار الارتفاع على 100%
+    }
+}
+
+// مراقبة التغييرات على عنصر الفيديو
+function observeVideoElement() {
+    const targetNode = document.querySelector('#player');
+    if (targetNode) {
+        const observer = new MutationObserver(function(mutationsList) {
+            for (let mutation of mutationsList) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    applyObjectFit(); // إعادة تطبيق object-fit عند أي تغيير
+                }
+            }
+        });
+
+        // بدء المراقبة
+        observer.observe(targetNode, { 
+            childList: true, // مراقبة التغييرات في العناصر الفرعية
+            attributes: true // مراقبة التغييرات في السمات
+        });
+    }
+}
+
+// تطبيق object-fit عند تحميل المشغل
+playerInstance.on('ready', function() {
+    applyObjectFit(); // التطبيق الأولي
+    observeVideoElement(); // بدء مراقبة التغييرات
+});
+
+// إعادة تطبيق object-fit عند تغيير حجم النافذة
+window.addEventListener('resize', function() {
+    applyObjectFit();
+});
+
+// إعادة تطبيق object-fit كل ثانية كـ backup
+setInterval(function() {
+    applyObjectFit();
+}, 1000);
+
+// مراقبة أحداث الشاشة الكاملة
+document.addEventListener('fullscreenchange', function() {
+    applyObjectFit(); // تطبيق object-fit عند الدخول أو الخروج من الشاشة الكاملة
+});
+
+document.addEventListener('webkitfullscreenchange', function() {
+    applyObjectFit(); // للتأكد من التوافق مع متصفحات WebKit (مثل Safari)
+});
+
+document.addEventListener('mozfullscreenchange', function() {
+    applyObjectFit(); // للتأكد من التوافق مع Firefox
+});
+
+document.addEventListener('MSFullscreenChange', function() {
+    applyObjectFit(); // للتأكد من التوافق مع Internet Explorer
+});
     const themeToggle = document.getElementById("theme-toggle");
     const channelsList = document.getElementById("channels-list");
     const searchInput = document.getElementById("search-input");
