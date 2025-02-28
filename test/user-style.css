@@ -124,9 +124,36 @@ main {
 #player {
     width: 100%;
     height: 100%;
-    object-fit: contain;
     position: relative;
     z-index: 2;
+}
+
+#player video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+#personal-logo {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+    width: 100px;
+    height: auto;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+#personal-logo.fullscreen {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 120px;
+    z-index: 9999;
 }
 
 @keyframes fadeInOut {
@@ -544,188 +571,165 @@ main {
     background: #f44336;
     border: 2px solid #d32f2f;
 }
+
 .dark-theme #theme-toggle i {
-    color: #00bcd4; /* لون سماوي مريح */
+    color: #00bcd4;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .dark-theme #theme-toggle:hover i {
-    color: #0097a7; /* لون سماوي داكن عند التحويم */
-    transform: scale(1.2); /* تكبير الأيقونة عند التحويم */
+    color: #0097a7;
+    transform: scale(1.2);
 }
+
 .dark-theme .social-icons a {
-    color: #00bcd4; /* لون سماوي مريح */
+    color: #00bcd4;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .dark-theme .social-icons a:hover {
-    color: #0097a7; /* لون سماوي داكن عند التحويم */
-    transform: scale(1.2); /* تكبير الأيقونة عند التحويم */
+    color: #0097a7;
+    transform: scale(1.2);
 }
 
 /* التنسيق العام للهواتف المحمولة */
 @media (max-width: 768px) {
     body {
         overflow-x: hidden;
-        font-size: 14px; /* تصغير حجم الخط للهواتف */
+        font-size: 14px;
     }
 
-    /* الهيدر */
     header {
-        padding: 5px 10px; /* تقليل الحشو */
+        padding: 5px 10px;
     }
 
     .logo img {
-        height: 40px; /* تصغير حجم اللوجو */
+        height: 40px;
     }
 
     .social-icons a {
-        font-size: 20px; /* تصغير حجم أيقونات السوشيال ميديا */
-    }
-
-    #theme-toggle {
-        padding: 8px; /* تصغير حجم زر تبديل الثيم */
         font-size: 20px;
     }
 
-    /* المشغل */
+    #theme-toggle {
+        padding: 8px;
+        font-size: 20px;
+    }
+
     #player-container {
-        height: 80vh; /* تقليل ارتفاع المشغل */
-        border-radius: 5px; /* تقليل زوايا التدوير */
+        height: 80vh;
+        border-radius: 5px;
     }
 
     #player-placeholder {
-        font-size: 18px; /* تصغير حجم النص في المشغل */
+        font-size: 18px;
     }
 
-    /* القائمة الجانبية */
     #channels-sidebar {
-        width: 100%; /* جعل القائمة تأخذ العرض بالكامل */
-        height: calc(100% - 60px); /* تعديل الارتفاع */
-        top: 60px; /* تعديل المسافة من الأعلى */
+        width: 100%;
+        height: calc(100% - 60px);
+        top: 60px;
     }
 
     .sidebar-header span {
-        font-size: 16px; /* تصغير حجم نص القائمة الجانبية */
+        font-size: 16px;
     }
 
     #close-sidebar {
-        padding: 5px; /* تصغير حجم زر الإغلاق */
+        padding: 5px;
         font-size: 18px;
     }
 
     .search-box {
-        padding: 5px; /* تقليل الحشو في صندوق البحث */
+        padding: 5px;
     }
 
     #search-input {
-        font-size: 14px; /* تصغير حجم نص البحث */
+        font-size: 14px;
     }
 
     .channel-card {
-        padding: 8px; /* تقليل الحشو في بطاقات القنوات */
+        padding: 8px;
     }
 
     .channel-card img {
-        width: 30px; /* تصغير حجم صور القنوات */
+        width: 30px;
         height: 30px;
     }
 
     .channel-card p {
-        font-size: 12px; /* تصغير حجم نص القنوات */
+        font-size: 12px;
     }
 
-    /* زر عرض القنوات */
     .channels-toggle {
-        bottom: 10px; /* تعديل المسافة من الأسفل */
+        bottom: 10px;
         left: 10px;
-        padding: 12px; /* تصغير حجم الزر */
+        padding: 12px;
     }
 
     .channels-toggle i {
-        font-size: 18px; /* تصغير حجم الأيقونة */
+        font-size: 18px;
     }
 
-    /* زر عرض المباريات */
     .matches-button {
-        bottom: 10px; /* تعديل المسافة من الأسفل */
+        bottom: 10px;
         right: 10px;
-        padding: 12px; /* تصغير حجم الزر */
+        padding: 12px;
     }
 
     .matches-button i {
-        font-size: 18px; /* تصغير حجم الأيقونة */
+        font-size: 18px;
     }
 
-    /* ديالوج المباريات */
     .dialog {
-        width: 95%; /* جعل الديالوج يأخذ عرضًا أكبر */
-        max-width: 95%; /* إزالة الحد الأقصى للعرض */
-        padding: 10px; /* تقليل الحشو */
+        width: 95%;
+        max-width: 95%;
+        padding: 10px;
     }
 
     .dialog-content h2 {
-        font-size: 18px; /* تصغير حجم عنوان الديالوج */
+        font-size: 18px;
     }
 
     .match-item {
-        padding: 10px; /* تقليل الحشو في عناصر المباريات */
+        padding: 10px;
     }
 
     .team img {
-        width: 30px; /* تصغير حجم صور الفرق */
+        width: 30px;
         height: 30px;
     }
 
     .team p {
-        font-size: 14px; /* تصغير حجم أسماء الفرق */
+        font-size: 14px;
     }
 
     .vs {
-        font-size: 16px; /* تصغير حجم نص "VS" */
+        font-size: 16px;
     }
 
     .match-status {
-        font-size: 14px; /* تصغير حجم حالة المباراة */
+        font-size: 14px;
     }
 
     .watch-button {
-        padding: 8px 16px; /* تصغير حجم زر المشاهدة */
+        padding: 8px 16px;
         font-size: 12px;
     }
 
-    /* أخبار التمرير */
     .news-ticker {
-        font-size: 12px; /* تصغير حجم نص الأخبار */
+        font-size: 12px;
     }
 
-    /* الثيم الدارك */
     .dark-theme #player-container {
-        border-color: #00bcd4; /* تعديل لون الحدود في الثيم الدارك */
+        border-color: #00bcd4;
     }
 
     .dark-theme .channel-card {
-        background: rgba(50, 50, 50, 0.9); /* تحسين خلفية بطاقات القنوات */
+        background: rgba(50, 50, 50, 0.9);
     }
 
     .dark-theme .dialog {
-        background: rgba(30, 30, 30, 0.95); /* تحسين خلفية الديالوج */
+        background: rgba(30, 30, 30, 0.95);
     }
-}
-/* تأكد من أن الفيديو يملأ الحاوية بالكامل */
-#player video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-}
-
-/* تأكد من أن الحاوية بتاعة المشغل تملأ الشاشة بالكامل */
-#player-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
 }
