@@ -348,26 +348,31 @@
 
         // Update Link with New Parameters
         async function updateLink(oldUrl) {
-            const newUrl = await fetchNewUrl();
-            if (newUrl) {
-                const baseUrl = oldUrl.split('?')[0]; // الجزء الثابت
-                const oldParams = new URLSearchParams(oldUrl.split('?')[1]); // معاملات الرابط الأصلي
-                const newParams = new URLSearchParams(newUrl.split('?')[1]); // معاملات الرابط الجديد
+    const newUrl = await fetchNewUrl();
+    if (newUrl) {
+        // استخراج المعاملات من الرابط الجديد
+        const newParams = new URLSearchParams(newUrl.split('?')[1]);
 
-                // تحديث القيم الديناميكية فقط (hmac, data, st, exp)
-                if (newParams.has('hmac')) oldParams.set('hmac', newParams.get('hmac'));
-                if (newParams.has('data')) oldParams.set('data', newParams.get('data'));
-                if (newParams.has('st')) oldParams.set('st', newParams.get('st'));
-                if (newParams.has('exp')) oldParams.set('exp', newParams.get('exp'));
+        // استخراج المعاملات من الرابط الأصلي
+        const oldParams = new URLSearchParams(oldUrl.split('?')[1]);
 
-                const updatedUrl = baseUrl + '?' + oldParams.toString(); // بناء الرابط المحدث
-                console.log("تم تحديث الرابط:", updatedUrl);
-                return updatedUrl;
-            } else {
-                console.error("لم يتم العثور على رابط جديد لتحديث الكود.");
-                return oldUrl; // استخدام الرابط الأصلي في حالة الفشل
-            }
-        }
+        // تحديث القيم الديناميكية فقط (st, exp, data, hmac)
+        if (newParams.has('st')) oldParams.set('st', newParams.get('st'));
+        if (newParams.has('exp')) oldParams.set('exp', newParams.get('exp'));
+        if (newParams.has('data')) oldParams.set('data', newParams.get('data'));
+        if (newParams.has('hmac')) oldParams.set('hmac', newParams.get('hmac'));
+
+        // بناء الرابط المحدث
+        const baseUrl = oldUrl.split('?')[0]; // الجزء الثابت
+        const updatedUrl = baseUrl + '?' + oldParams.toString();
+
+        console.log("تم تحديث الرابط:", updatedUrl);
+        return updatedUrl;
+    } else {
+        console.error("لم يتم العثور على رابط جديد لتحديث الكود.");
+        return oldUrl; // استخدام الرابط الأصلي في حالة الفشل
+    }
+}
 
         // Initialize
         document.addEventListener("DOMContentLoaded", () => {
