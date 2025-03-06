@@ -282,28 +282,39 @@
         async function fetchUpdatedVariables() {
             try {
                 const response = await fetch('https://alraqi-tv.com/script/TodTV/tod.php?id=215168');
-                const text = await response.text();
-                console.log('API Response:', text); // Log the API response
+                const data = await response.json(); // Parse the response as JSON
+                console.log('API Response:', data); // Log the API response
 
-                const contentUrlMatch = text.match(/ContentUrl\s*:\s*"([^"]+)"/);
-                if (contentUrlMatch && contentUrlMatch[1]) {
-                    const url = new URL(contentUrlMatch[1]);
-                    const params = new URLSearchParams(url.search);
-                    const variables = {
-                        data: params.get('data'),
-                        hmac: params.get('hmac'),
-                        st: params.get('st'),
-                        exp: params.get('exp')
-                    };
-                    console.log('Extracted Variables:', variables); // Log the extracted variables
-                    return variables;
-                } else {
-                    console.error('Failed to extract ContentUrl from API response.');
+                const contentUrl = data.ContentUrl; // Extract the ContentUrl
+                if (!contentUrl) {
+                    console.error('ContentUrl not found in API response.');
+                    return null;
                 }
+
+                // Extract variables manually from the URL
+                const stMatch = contentUrl.match(/st=([^&~]+)/);
+                const expMatch = contentUrl.match(/exp=([^&~]+)/);
+                const dataMatch = contentUrl.match(/data=([^&~]+)/);
+                const hmacMatch = contentUrl.match(/hmac=([^&~]+)/);
+
+                if (!stMatch || !expMatch || !dataMatch || !hmacMatch) {
+                    console.error('Failed to extract variables from ContentUrl.');
+                    return null;
+                }
+
+                const variables = {
+                    st: stMatch[1],
+                    exp: expMatch[1],
+                    data: dataMatch[1],
+                    hmac: hmacMatch[1]
+                };
+
+                console.log('Extracted Variables:', variables); // Log the extracted variables
+                return variables;
             } catch (error) {
                 console.error('Error fetching updated variables:', error);
+                return null;
             }
-            return null;
         }
 
         // Function to update the URL with new variables
@@ -311,10 +322,10 @@
             if (!variables) return originalUrl;
             const url = new URL(originalUrl);
             const params = new URLSearchParams(url.search);
-            params.set('data', variables.data);
-            params.set('hmac', variables.hmac);
             params.set('st', variables.st);
             params.set('exp', variables.exp);
+            params.set('data', variables.data);
+            params.set('hmac', variables.hmac);
             url.search = params.toString();
             console.log('Updated URL:', url.toString()); // Log the updated URL
             return url.toString();
@@ -359,7 +370,7 @@
         async function refreshChannels() {
             console.log('Refreshing channels...'); // Log the start of the refresh process
             const variables = await fetchUpdatedVariables();
-            if (!variables || !variables.data || !variables.hmac || !variables.st || !variables.exp) {
+            if (!variables || !variables.st || !variables.exp || !variables.data || !variables.hmac) {
                 console.error('Failed to fetch valid variables.'); // Log if variables are invalid
                 alert('Failed to update channels. Please try again later.');
                 return;
