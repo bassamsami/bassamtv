@@ -320,12 +320,18 @@
         // Function to update the URL with new variables
         function updateUrlWithVariables(originalUrl, variables) {
             if (!variables) return originalUrl;
+
+            // Parse the original URL
             const url = new URL(originalUrl);
             const params = new URLSearchParams(url.search);
+
+            // Update the existing parameters with new values
             params.set('st', variables.st);
             params.set('exp', variables.exp);
             params.set('data', variables.data);
             params.set('hmac', variables.hmac);
+
+            // Update the URL with the modified parameters
             url.search = params.toString();
             console.log('Updated URL:', url.toString()); // Log the updated URL
             return url.toString();
