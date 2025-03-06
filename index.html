@@ -248,17 +248,14 @@
         <option value="ar">العربية</option>
     </select>
 
-    <div class="header">
-        <div id="header">Algerian Channels</div> <br>
-		
-        <button class="refresh-btn" onclick="refreshChannels()">↻</button>
-    </div>
+    <div class="header" id="header">Algerian Channels</div>
+    <button class="refresh-btn" onclick="refreshChannels()">↻</button>
     <input type="text" id="search-bar" placeholder="Search channels..." oninput="filterChannels()">
     <div class="container">
         <!-- Channel Cards -->
         <div class="card" data-url="https://alraqi-tv.com/script/TodTV/play.php/?link=https://live-d-01-todtv-da.akamaized.net/variant/v1blackout/spo-hd-39-d-shortdvr/DASH_DASH/Live/channel(spo-hd-08)/manifest.mpd?hdnts=st=1741189528~exp=1741203928~acl=/variant/v1blackout/spo-hd-39-d-shortdvr/*~data=8062ef6e-79ad-47b5-b3d2-e2372b479ae4~hmac=b5f0312eaf0ce022f4ae81de20f609c7c3627849295db824710fd946d3a046d6&hdcore=2.11.3">
-            <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/7/72/Logo_de_TV1_Alg%C3%A9rie_%282020%29.svg/180px-Logo_de_TV1_Alg%C3%A9rie_%282020%29.svg.png" alt="ENTV">
-            <h3>Programme National (ENTV)</h3>
+            <img src="https://assets.bein.com/mena/sites/4/2015/06/NBA_DIGITAL_Mono.png" alt="bnba">
+            <h3>beIN SPORTS NBA</h3>
         </div>
     </div>
 
@@ -286,16 +283,22 @@
             try {
                 const response = await fetch('https://alraqi-tv.com/script/TodTV/tod.php?id=215168');
                 const text = await response.text();
+                console.log('API Response:', text); // Log the API response
+
                 const contentUrlMatch = text.match(/ContentUrl\s*:\s*"([^"]+)"/);
                 if (contentUrlMatch && contentUrlMatch[1]) {
                     const url = new URL(contentUrlMatch[1]);
                     const params = new URLSearchParams(url.search);
-                    return {
+                    const variables = {
                         data: params.get('data'),
                         hmac: params.get('hmac'),
                         st: params.get('st'),
                         exp: params.get('exp')
                     };
+                    console.log('Extracted Variables:', variables); // Log the extracted variables
+                    return variables;
+                } else {
+                    console.error('Failed to extract ContentUrl from API response.');
                 }
             } catch (error) {
                 console.error('Error fetching updated variables:', error);
@@ -313,6 +316,7 @@
             params.set('st', variables.st);
             params.set('exp', variables.exp);
             url.search = params.toString();
+            console.log('Updated URL:', url.toString()); // Log the updated URL
             return url.toString();
         }
 
@@ -353,10 +357,12 @@
 
         // Refresh Channels
         async function refreshChannels() {
+            console.log('Refreshing channels...'); // Log the start of the refresh process
             const variables = await fetchUpdatedVariables();
             if (!variables || !variables.data || !variables.hmac || !variables.st || !variables.exp) {
+                console.error('Failed to fetch valid variables.'); // Log if variables are invalid
                 alert('Failed to update channels. Please try again later.');
-                return; // Stop the function if variables are invalid
+                return;
             }
 
             const cards = document.querySelectorAll('.card');
@@ -364,6 +370,7 @@
                 const originalUrl = card.getAttribute('data-url');
                 const updatedUrl = updateUrlWithVariables(originalUrl, variables);
                 card.setAttribute('data-url', updatedUrl);
+                console.log(`Updated URL for ${card.querySelector('h3').textContent}: ${updatedUrl}`); // Log the updated URL for each card
             });
 
             alert('Channels updated successfully!');
@@ -389,6 +396,12 @@
             const lang = document.getElementById('language-switch').value;
             localStorage.setItem('language', lang);
         });
+
+        // Update variables every hour
+        setInterval(async () => {
+            const variables = await fetchUpdatedVariables();
+            console.log('Updated variables:', variables);
+        }, 3600000); // 3600000 milliseconds = 1 hour
     </script>
 </body>
 </html>
