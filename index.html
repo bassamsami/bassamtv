@@ -8,10 +8,11 @@
   <script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
   <style>
+   /* جعل الفيديو يملأ المشغل بالكامل */
         .jw-video {
             object-fit: fill !important;
         }
-  </style>
+</style>
   <script>
     jwplayer.key = "ITWMv7t88JGzI0xPwW8I0+LveiXX9SWbfdmt0ArUSyc="; 
 
@@ -48,7 +49,9 @@
           link: "https://t.me/moviball",
           hide: false,
           position: "bottom-left",
-          margin: 5
+          margin: 5,
+          width: 30,
+          height: 30
         },
         skin: {
           url: "https://cdn.jsdelivr.net/gh/kiprox/cf-gdplay@master/skins/netplex.css",
@@ -81,32 +84,19 @@
         const logoElement = document.querySelector(".jw-logo");
         if (logoElement) {
           logoElement.style.position = "fixed";
-          logoElement.style.bottom = "11%";
-          logoElement.style.left = "0.5%";
-          logoElement.style.opacity = "0";  
-          logoElement.style.transition = "opacity 0s ease-in-out"; 
+          logoElement.style.top = "50vw";
+          logoElement.style.left = "1vw";
+          logoElement.style.opacity = "0";  // إخفاء اللوجو في البداية
+          logoElement.style.transition = "opacity 0s ease-in-out"; // ظهور سريع بعد بدء البث
         }
-
-        function adjustLogoSize() {
-          const isMobile = window.innerWidth <= 768;
-          const logoSize = isMobile ? "5vw" : "3vw";  
-
-          if (logoElement) {
-            logoElement.style.width = logoSize;
-            logoElement.style.height = "auto"; 
-          }
-        }
-
-        adjustLogoSize();
-        window.addEventListener("resize", adjustLogoSize);
 
         function updateLogoOpacity() {
           let quality = player.getVisualQuality();
           if (quality && quality.level) {
-            let currentHeight = quality.level.height || 480; 
-            let opacity = 0.2 + ((currentHeight - 240) / (1080 - 240)) * (0.7 - 0.2);
+            let currentHeight = quality.level.height || 480; // افتراضي 480 إذا لم تتوفر الجودة
+            let opacity = 0.2 + ((currentHeight - 240) / (1080 - 240)) * (0.8 - 0.2);
             
-            if (currentHeight >= 1080) opacity = 1;
+            if (currentHeight > 1080) opacity = 0.9;
 
             if (logoElement) {
               logoElement.style.opacity = opacity.toFixed(2);
@@ -115,42 +105,16 @@
           }
         }
 
+        // عند ظهور أول لقطة فيديو، نُظهر اللوجو ونضبط الشفافية
         player.on("firstFrame", function() {
+          if (logoElement) {
+            logoElement.style.opacity = "1"; // ظهور اللوجو فور تشغيل البث
+          }
           updateLogoOpacity();
         });
 
         player.on("visualQuality", updateLogoOpacity);
         player.on("levelsChanged", updateLogoOpacity);
-
-        // 🔥 إخفاء اللوجو عند اختفاء الصورة (وليس فقط عند الإيقاف)
-        function checkVideoVisibility() {
-          const videoElement = document.querySelector(".jw-video");
-          if (!videoElement) return;
-
-          const videoRect = videoElement.getBoundingClientRect();
-          const isVisible = videoRect.width > 0 && videoRect.height > 0;
-
-          if (logoElement) {
-            logoElement.style.opacity = isVisible ? logoElement.dataset.opacity : "0";
-          }
-        }
-
-        // تخزين الشفافية الأصلية للوجو
-        player.on("visualQuality", function() {
-          let quality = player.getVisualQuality();
-          if (quality && quality.level) {
-            let currentHeight = quality.level.height || 480;
-            let opacity = 0.2 + ((currentHeight - 240) / (1080 - 240)) * (0.8 - 0.2);
-            if (currentHeight > 1080) opacity = 1;
-
-            if (logoElement) {
-              logoElement.dataset.opacity = opacity.toFixed(2);
-              logoElement.style.opacity = opacity.toFixed(2);
-            }
-          }
-        });
-
-        setInterval(checkVideoVisibility, 500);
       });
 
       player.on("fullscreen", function(event) {
