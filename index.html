@@ -8,7 +8,6 @@
   <script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
   <style>
-   /* جعل الفيديو يملأ المشغل بالكامل */
         .jw-video {
             object-fit: fill !important;
         }
@@ -117,14 +116,41 @@
         }
 
         player.on("firstFrame", function() {
-          if (logoElement) {
-            logoElement.style.opacity = "1"; 
-          }
           updateLogoOpacity();
         });
 
         player.on("visualQuality", updateLogoOpacity);
         player.on("levelsChanged", updateLogoOpacity);
+
+        // 🔥 إخفاء اللوجو عند اختفاء الصورة (وليس فقط عند الإيقاف)
+        function checkVideoVisibility() {
+          const videoElement = document.querySelector(".jw-video");
+          if (!videoElement) return;
+
+          const videoRect = videoElement.getBoundingClientRect();
+          const isVisible = videoRect.width > 0 && videoRect.height > 0;
+
+          if (logoElement) {
+            logoElement.style.opacity = isVisible ? logoElement.dataset.opacity : "0";
+          }
+        }
+
+        // تخزين الشفافية الأصلية للوجو
+        player.on("visualQuality", function() {
+          let quality = player.getVisualQuality();
+          if (quality && quality.level) {
+            let currentHeight = quality.level.height || 480;
+            let opacity = 0.2 + ((currentHeight - 240) / (1080 - 240)) * (0.8 - 0.2);
+            if (currentHeight > 1080) opacity = 1;
+
+            if (logoElement) {
+              logoElement.dataset.opacity = opacity.toFixed(2);
+              logoElement.style.opacity = opacity.toFixed(2);
+            }
+          }
+        });
+
+        setInterval(checkVideoVisibility, 500);
       });
 
       player.on("fullscreen", function(event) {
