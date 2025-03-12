@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+  <title>MoviBall Connect</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.1/shaka-player.compiled.js"></script>
+  <script src="//ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+  <style>
+   /* جعل الفيديو يملأ المشغل بالكامل */
+        .jw-video {
+            object-fit: fill !important;
+        }
+</style>
+  <script>
+    jwplayer.key = "ITWMv7t88JGzI0xPwW8I0+LveiXX9SWbfdmt0ArUSyc="; 
+
+    $(document).ready(function() {
+      const streamUrl = "https://live-d-02-todtv-db.akamaized.net/variant/v1blackout/spo-hd-39-d-shortdvr/DASH_DASH/Live/channel(spo-hd-08)/manifest.mpd?hdnts=st=1741790573~exp=1741804973~acl=/variant/v1blackout/spo-hd-39-d-shortdvr/*~data=035ed9db-7883-43ed-b101-7f1a68b1f741~hmac=c4d31d05aa5f47b0b51088b0e1f9ef45652ae349f4947aa6490091987957baf6&hdcore=2.11.3";
+      const drmKey = {
+        keyId: "0a7934dddc3136a6922584b96c3fd1e5",
+        key: "676e6d1dd00bfbe266003efaf0e3aa02"
+      };
+
+      if (streamUrl && drmKey) {
+        setupJWPlayer(streamUrl, drmKey);
+      } else {
+        console.error("فشل في تحميل بيانات القناة!");
+        alert("فشل في تحميل بيانات القناة!");
+      }
+    });
+
+    function setupJWPlayer(streamUrl, drmKey) {
+      var player = jwplayer("container").setup({
+        width: "100%",
+        height: "100%",
+        controls: true,
+        stretching: "fill",
+        autostart: true,
+        horizontalVolumeSlider: true,
+        preload: "auto",
+        playbackRateControls: true,
+        primary: "html5",
+        mute: false,
+        volume: 80,
+        logo: {
+          file: "https://up6.cc/2025/03/174177781485261.png",
+          link: "https://t.me/moviball",
+          hide: false,
+          position: "bottom-left",
+          margin: 5,
+          width: 30, // حجم اللوجو الافتراضي
+          height: 30 // حجم اللوجو الافتراضي
+        },
+        skin: {
+          url: "https://cdn.jsdelivr.net/gh/kiprox/cf-gdplay@master/skins/netplex.css",
+          name: "Netflix"
+        },
+        aspectratio: "16:9",
+        playlist: [{
+          sources: [{
+            file: streamUrl,
+            type: "dash",
+            drm: {
+              clearkey: {
+                keyId: drmKey.keyId,
+                key: drmKey.key
+              }
+            },
+            label: "HD"
+          }]
+        }]
+      });
+
+      player.on("setupError", function(event) {
+        console.error("خطأ في إعداد المشغل:", event.message);
+        alert("حدث خطأ أثناء تحميل المشغل!");
+      });
+
+      player.on("ready", function() {
+        console.log("تم تحميل المشغل بنجاح!");
+
+        const logoElement = document.querySelector(".jw-logo");
+        if (logoElement) {
+          logoElement.style.position = "fixed";
+          logoElement.style.bottom = "11%";
+          logoElement.style.left = "1%";
+          logoElement.style.opacity = "0";  // إخفاء اللوجو في البداية
+          logoElement.style.transition = "none"; // ظهور سريع بعد بدء البث
+        }
+
+        function updateLogoOpacity() {
+          let quality = player.getVisualQuality();
+          if (quality && quality.level) {
+            let currentHeight = quality.level.height || 480; // افتراضي 480 إذا لم تتوفر الجودة
+            let opacity = 0.2 + ((currentHeight - 240) / (1080 - 240)) * (0.8 - 0.2);
+            
+            if (currentHeight > 1080) opacity = 0.9;
+
+            if (logoElement) {
+              logoElement.style.opacity = opacity.toFixed(2);
+              console.log(`الجودة الحالية: ${currentHeight}px | الشفافية: ${opacity.toFixed(2)}`);
+            }
+          }
+        }
+
+        // عند ظهور أول لقطة فيديو، نُظهر اللوجو ونضبط الشفافية
+        player.on("firstFrame", function() {
+          if (logoElement) {
+            logoElement.style.opacity = "1"; // ظهور اللوجو فور تشغيل البث
+          }
+          updateLogoOpacity();
+        });
+
+        player.on("visualQuality", updateLogoOpacity);
+        player.on("levelsChanged", updateLogoOpacity);
+      });
+
+      player.on("fullscreen", function(event) {
+        if (event.fullscreen) {
+          screen.orientation.lock("landscape").catch(() => {
+            console.warn("لم يتم دعم تأمين الشاشة في هذا المتصفح.");
+          });
+        } else {
+          screen.orientation.unlock();
+        }
+      });
+    }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; outline: none; }
+    #container { position: absolute; width: 100%!important; height: 100%!important; }
+    *:focus { outline: none; }
+
+    /* تصغير حجم اللوجو على الأجهزة المحمولة */
+    @media (max-width: 768px) {
+      .jw-logo {
+        width: 10% !important; /* حجم أصغر للوجو بالنسبة المئوية */
+        height: 10% !important; /* حجم أصغر للوجو بالنسبة المئوية */
+      }
+    }
+  </style>
+</head>
+
+<body>    
+  <div id="container"></div>
+</body>
+</html>
