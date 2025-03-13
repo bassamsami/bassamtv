@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="title" content="MoviBall | بث مباشر للمباريات والقنوات الرياضية بجودة عالية">
+    <meta name="description" content="مشاهدة مباريات اليوم بث مباشر بدون تقطيع على موقع MoviBall. استمتع بمشاهدة قنوات beIN Sports و SSC والعديد من القنوات الرياضية المشفرة والمفتوحة بجودة عالية.">
+    <meta name="keywords" content="بث مباشر, مباريات اليوم, beIN Sports مباشر, SSC بث مباشر, قنوات رياضية, مشاهدة المباريات, قنوات مشفرة, الدوري الإسباني, الدوري الإنجليزي, البث المباشر">
+    <meta name="author" content="Bassam Samir">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="MoviBall | بث مباشر للمباريات والقنوات الرياضية بجودة عالية">
+    <meta property="og:description" content="تابع أحدث المباريات والقنوات الرياضية مباشرة على MoviBall، بجودة عالية وبدون تقطيع.">
+    <meta property="og:image" content="https://tv.moviball.com/Home/logo.png">
+    <meta property="og:url" content="https://tv.moviball.com/Home/index.com">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MoviBall | بث مباشر للمباريات والقنوات الرياضية بجودة عالية">
+    <meta name="twitter:description" content="مشاهدة المباريات بث مباشر بدون تقطيع على MoviBall، مع تحديثات مستمرة للقنوات الرياضية.">
+    <meta name="twitter:image" content="https://tv.moviball.com/Home/logo.png">
+    <title>MoviBall Connect</title>
+    <link rel="stylesheet" href="user-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <style>
+   /* جعل الفيديو يملأ المشغل بالكامل */
+        .jw-video {
+            object-fit: fill !important;
+        }
+		@media (max-width: 768px) {
+      .jw-logo {
+    width: 15%; /* حجم اللوجو كنسبة مئوية من عرض المشغل */
+    height: auto; /* الحفاظ على نسبة الطول إلى العرض */
+}
+    }
+</style>
+<script src="https://ssl.p.jwpcdn.com/player/v/8.26.0/jwplayer.js"></script>
+    <script>
+        jwplayer.key = 'XSuP4qMl+9tK17QNb+4+th2Pm9AWgMO/cYH8CI0HGGr7bdjo';
+    </script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="https://www2.0zz0.com/2025/02/16/17/600886847.png" alt="MoviBall Logo">
+        </div>
+        <div class="header-right">
+		
+            <div class="social-icons">
+                <a href="https://www.facebook.com/moviball"><i class="fab fa-facebook"></i></a>
+                <a href="https://t.me/moviball"><i class="fab fa-telegram"></i></a>
+                <a href="https://wa.me/201067690853"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <main>
+        <!-- الشاشة الرئيسية -->
+        <div id="main-page">
+            <!-- المشغل -->
+            <div id="player-container">
+                <div id="player"></div>
+				<div id="personal-logo" style="display: none;">
+        <img src="https://www2.0zz0.com/2025/02/20/20/544119117.png" alt="Personal Logo">
+    </div>
+</div>
+
+            <!-- زر عرض القنوات -->
+            <button id="channels-toggle" class="channels-toggle">
+                <i class="fas fa-tv"></i>
+            </button>
+
+            <!-- قائمة القنوات -->
+            <div id="channels-sidebar">
+                <div class="sidebar-header">
+                    <span>قائمة القنوات</span>
+                    <button id="close-sidebar"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="ابحث عن قناة...">
+                    <button id="clear-search"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="channels-list">
+                    <!-- المجموعات والقنوات سيتم إضافتها هنا عبر JavaScript -->
+                </div>
+            </div>
+
+
+            <!-- زر عرض المباريات -->
+            <button id="matches-button" class="matches-button">
+                <i class="fas fa-table"></i>
+            </button>
+        </div>
+
+        <!-- ديالوج المباريات -->
+        <div id="matches-dialog" class="dialog">
+            <div class="dialog-content">
+                <h2>جدول المباريات</h2>
+                <div id="matches-table">
+                    <!-- المباريات سيتم إضافتها هنا عبر JavaScript -->
+                </div>
+                <button id="close-matches-dialog" class="close-dialog"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- ديالوج الانتظار -->
+    <div id="loading-dialog" class="dialog">
+        <div class="dialog-content">
+            <div class="loader"></div>
+            <p>جاري تحديث الروابط...</p>
+        </div>
+    </div>
+
+    <!-- ديالوج النجاح -->
+    <div id="success-dialog" class="dialog">
+        <div class="dialog-content">
+            <i class="fas fa-check-circle success-icon"></i>
+            <p>تم تحديث القنوات بنجاح!</p>
+        </div>
+    </div>
+
+    <!-- ديالوج الخطأ -->
+    <div id="error-dialog" class="dialog">
+        <div class="dialog-content">
+            <i class="fas fa-times-circle error-icon"></i>
+            <p>حدث خطأ أثناء تحديث الروابط.</p>
+        </div>
+    </div>
+    <!-- ديالوج القنوات المحدثة من قبل -->
+    <div id="already-updated-dialog" class="dialog">
+        <div class="dialog-content">
+            <i class="fas fa-sync-alt update-icon"></i>
+            <p>القنوات محدثة من قبل!</p>
+        </div>
+    </div>
+    </main>
+
+    <footer>
+        <div class="news-ticker">
+            <marquee id="news-ticker-content">
+                <!-- الأخبار سيتم إضافتها هنا عبر JavaScript -->
+            </marquee>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="firebase.js"></script>
+    <script src="scriptvip.js"></script>
+    <script src="user-script.js"></script>
+   
+</body>
+</html>
