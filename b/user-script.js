@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     link: "https://t.me/moviball",
                     hide: false,
                     position: "bottom-left",
-                    margin: 30,
+                    margin: 28,
                     width: 30, // حجم اللوجو الافتراضي
                     height: 30 // حجم اللوجو الافتراضي
                 },
@@ -231,8 +231,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const logoElement = document.querySelector(".jw-logo");
                 if (logoElement) {
                     logoElement.style.position = "fixed";
-                    logoElement.style.bottom = "11%";
-                    logoElement.style.left = "1%";
+                    logoElement.style.bottom = "5%";
+                    logoElement.style.left = "0.5%";
                     logoElement.style.opacity = "0";  // إخفاء اللوجو في البداية
                     logoElement.style.transition = "none"; // ظهور سريع بعد بدء البث
                 }
